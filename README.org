@@ -1,0 +1,58 @@
+* All-in-one Embedded Tutorial With =Raspberrypi RP2040 MCU=
+
+In this tutorial, we will cover all the pieces of knowledge we need to know for using =C= and =Zig= to do embedded programming.
+
+Although we're targeting the =RP2040 MCU=, in fact, we still need an MCU board that has the =RP2040= to run all demo codes. That's why we pick the =Raspberrypi Pico-W= as our target board to run all the demos.
+
+** The major purposes of this repo: 
+
+1. Learn the fundamental concepts and knowledge for embedded programming from scratch, what we've learned is NOT limited to Raspberry Pi RP2040 MCU, actually, it benefits all MCUs as well1.
+
+2. The real-world demo to show how to use =C= and =Zig= in embedded programming.
+
+3. How to mix =Zig= and =C= in low-level hardware development.
+
+
+**  =RP2040 MCU= and =Raspberry Pi Pico W= board datasheet
+
+All demos in this repo use the [[https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html#the-family][Raspberry Pi Pico W]] microcontroller, you can download the related resources from here: 
+
+*** Major datasheets
+
+The following data sheets are the major knowledge sources that we will learn from, as we need to know the fundamental concepts and terms about MCU programming, that's the best resource. 
+
+- [[https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf][RP2040 datasheet]]
+
+- [[https://documentation-service.arm.com/static/620545c494e7af28dd7c9cbc][Arm Cortex-M0+ Processor Datasheet]]
+
+
+*** Pin and PCB related
+
+- [[https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf][Hardware design with RP2040]] (Just in case you want to build your own PCB with minimal design to work with =RP2040= MCU)
+
+- [[https://datasheets.raspberrypi.com/picow/PicoW-A4-Pinout.pdf][Pico Pinout Diagram]] 
+
+- [[https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf][Pico W datasheet]]
+
+
+*** Pico/Pico W C/C++ SDK related
+
+Although we target to learn how to use MCU registers to control MCU, in the other way, you are still able to choose to use the existing C/C++ SDK (to call APIs) to deal with RP2040 if you need the fast development cycle. 
+
+- [[https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf][Pico W C/C++ SDK]]
+
+- [[https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf][Getting started with Pico]] (how to debug pico)
+
+- [[https://datasheets.raspberrypi.com/picow/connecting-to-the-internet-with-pico-w.pdf][Pico W WIFI and Bluetooth]]
+
+
+
+** Folder structure
+
+#+BEGIN_SRC bash
+#+END_SRC
+
+
+** Tutorial chapters
+
+[[file:tutorial/glossary-of-terms.org][Glossary of terms]]

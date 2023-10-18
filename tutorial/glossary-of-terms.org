@@ -1,0 +1,29 @@
+* Glossary of terms
+
+| Terms      | Description                          |
+|------------+--------------------------------------|
+| [ Basic ]  |                                      |
+| =MCU=        | Microcontroller Unit                 |
+| =SOC=        | System-on-chip                       |
+| =SBC=        | Single Board Computer                |
+|            |                                      |
+| [ ARM ]    |                                      |
+| =AHB-Lite=   | Advanced High-performance Bus Lite   |
+| =BPU=        | Breakpoint Unit                      |
+| =C-ABI=      | C Application Binary Interface       |
+| =CTI=        | Cross Trigger Interface Unit         |
+| =DWT=        | Data Watchpoint and Trace            |
+| =FPU=        | Floating Point Unit                  |
+| =JTAG=       | Joint Test Action Group              |
+| =MPU=        | Memory Protection Unit               |
+| =MTB=        | Micro Trace Buffer                   |
+| =NMI=        | Non-Maskable Interrupt               |
+| =NVIC=       | Nested Vectored Interrupt Controller |
+| =SWO=        | Serial Wire Output                   |
+| =WFE=        | Wait for event                       |
+| =WFI=        | Wait for interrupt                   |
+| =WIC=        | Wake-up interrupt controller         |
+| =WIC=        | Wake-up Interrupt Controller         |
+|            |                                      |
+| [ RP2040 ] |                                      |
+|            |                                      |

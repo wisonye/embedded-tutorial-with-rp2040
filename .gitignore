@@ -1,0 +1,6 @@
+build
+.cache
+clangd.core
+build.log
+zig-cache
+zig-out
