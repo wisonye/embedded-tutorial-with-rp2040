@@ -21,7 +21,12 @@ It's basically a very small computer on an =IC= (integrated circuit) or microchi
 - =MCU= doesn't have =OS= at all (even if you use =FreeRTOS=, it actually just a task scheduler), your program will be the **only** one program running there with full control and real-time responsiveness.
 
 
-** =STM32= and =RP2040= MCUs
+** =ARM-Cortex-M=, =STM32= and =RP2040= MCUs
+
+*** =ARM-Cortex-M=
+
+The =ARM Cortex-M= is a group of =32-bit RISC ARM processor cores= licensed by =ARM Limited=. These cores are optimized for low-cost and energy-efficient integrated circuits, which have been embedded in tens of billions of consumer devices.[1] Though they are most often the main component of microcontroller chips, sometimes they are embedded inside other types of chips too.
+
 
 *** =STM32=
 
@@ -84,4 +89,33 @@ Key features:
     - USB 1.1 controller and PHY, with host and device support
 
     - 8 PIO state machine
+
+
+*** =Cortex-M0+=
+
+=RP2040= has 2 of this processor, that means =RP2040= is 32bit RISC architecture.
+
+The =Cortex-M0+= is an optimized superset of the =Cortex-M0=. The =Cortex-M0+= has complete instruction set compatibility with the =Cortex-M0= thus allowing the use of the same compiler and debug tools.
+
+The =Cortex-M0+= pipeline was reduced from 3 to 2 stages, which lowers the power usage. In addition to debug features in the existing =Cortex-M0=, a silicon option can be added to the =Cortex-M0+= called the Micro Trace Buffer (=MTB=) which provides a simple instruction trace buffer.
+
+The =Cortex-M0+= also received =Cortex-M3= and =Cortex-M4= features, which can be added as silicon options, such as the memory protection unit (=MPU=) and the vector table relocation.
+
+Key features of the =Cortex-M0+= core are:
+
+- ARMv6-M architecture
+- 2-stage pipeline (one fewer than Cortex-M0)
+- Instruction sets: (same as Cortex-M0)
+- Thumb-1 (most), missing CBZ, CBNZ, IT
+- Thumb-2 (some), only BL, DMB, DSB, ISB, MRS, MSR
+- 32-bit hardware integer multiply with 32-bit result
+- 1 to 32 interrupts, plus NMI
+
+Silicon options:
+
+- Hardware integer multiply speed: 1 or 32 cycles
+- 8-region memory protection unit (MPU) (same as M3 and M4)
+- Vector table relocation (same as M3, M4)
+- Single-cycle I/O port (available in M0+/M23)
+- Micro Trace Buffer (MTB) (available in M0+/M23/M33/M35P)
 
