@@ -4,7 +4,7 @@ In this tutorial, we will cover all the pieces of knowledge we need to know for 
 
 Although we're targeting the =RP2040 MCU=, in fact, we still need an MCU board that has the =RP2040= to run all demo codes. That's why we pick the =Raspberrypi Pico-W= as our target board to run all the demos.
 
-** The major purposes of this repo: 
+** The major purposes of this tutorial: 
 
 1. Learn the fundamental concepts and knowledge for embedded programming from scratch, what we've learned is NOT limited to Raspberry Pi RP2040 MCU, actually, it benefits all MCUs as well1.
 
@@ -15,7 +15,7 @@ Although we're targeting the =RP2040 MCU=, in fact, we still need an MCU board t
 
 **  =RP2040 MCU= and =Raspberry Pi Pico W= board datasheet
 
-All demos in this repo use the [[https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html#the-family][Raspberry Pi Pico W]] microcontroller, you can download the related resources from here: 
+All demos in this tutorial use the [[https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html#the-family][Raspberry Pi Pico W]] microcontroller, you can download the related resources from here: 
 
 *** Major datasheets
 
@@ -55,4 +55,5 @@ Although we target to learn how to use MCU registers to control MCU, in the othe
 
 ** Tutorial chapters
 
-[[file:tutorial/glossary-of-terms.org][Glossary of terms]]
+[[file:tutorial/1-glossary-of-terms.org][1. Glossary of terms]]
+[[file:tutorial/2-basic-concepts.org][2. Basic concepts]]
