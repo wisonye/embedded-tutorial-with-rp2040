@@ -56,4 +56,5 @@ Although we target to learn how to use MCU registers to control MCU, in the othe
 ** Tutorial chapters
 
 [[file:tutorial/1-glossary-of-terms.org][1. Glossary of terms]]
+
 [[file:tutorial/2-basic-concepts.org][2. Basic concepts]]
