@@ -78,13 +78,15 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
 [[file:tutorial/2-basic-concepts.org][2. Basic concepts]]
 
-3. How MCU works
+3. Install tooling
 
-4. How =RP2040= boots
+   [[file:tutorial/3-1-a-install-arm-gnu-toolchain.org][3.1. Install ARM GNU Toolchain]]
 
-5. Install tooling
+   [[file:tutorial/3-1-b-setup-pico-sdk.org][3.2. Setup PICO C/C++ SDK]]
 
-6. Write your first program and run on =Pico W=
+   [[file:tutorial/3-1-c-setup-pico-examples.org][3.3. Setup PICO Examples when you needed]]
+
+4. Write your first program and run on =Pico W=
 
    1.1  Bitwise operations to control =RP2040= register
 

@@ -1,0 +1,68 @@
+* Setup =Pico SDK=
+
+The first thing first, you need to clone the =PicoSDK= repo to a folder, can be any folder, you don't need to put it into the current project folder.
+
+For example, I use =~/pico= folder:
+
+#+BEGIN_SRC bash
+  mkdir ~/pico && cd ~/pico
+  git clone --depth=1 https://github.com/raspberrypi/pico-sdk.git
+#+END_SRC
+
+Clone all submodules for the =Pico Wireless= board:
+
+#+BEGIN_SRC bash
+  cd pico-sdk
+  git submodule update --init --depth=1
+
+  # Submodule 'lib/btstack' (https://github.com/bluekitchen/btstack.git) registered for path 'lib/btstack'
+  # Submodule 'lib/cyw43-driver' (https://github.com/georgerobotics/cyw43-driver.git) registered for path 'lib/cyw43-driver'
+  # Submodule 'lib/lwip' (https://github.com/lwip-tcpip/lwip.git) registered for path 'lib/lwip'
+  # Submodule 'lib/mbedtls' (https://github.com/Mbed-TLS/mbedtls.git) registered for path 'lib/mbedtls'
+  # Submodule 'tinyusb' (https://github.com/hathach/tinyusb.git) registered for path 'lib/tinyusb'
+  # Cloning into '/Users/wison/pico/pico-sdk/lib/btstack'...
+  # Cloning into '/Users/wison/pico/pico-sdk/lib/cyw43-driver'...
+  # Cloning into '/Users/wison/pico/pico-sdk/lib/lwip'...
+  # Cloning into '/Users/wison/pico/pico-sdk/lib/mbedtls'...
+  # Cloning into '/Users/wison/pico/pico-sdk/lib/tinyusb'...
+  # Submodule path 'lib/btstack': checked out '0d212321a995ed2f9a80988f73ede854c7ad23b8'
+  # Submodule path 'lib/cyw43-driver': checked out '9bfca61173a94432839cd39210f1d1afdf602c42'
+  # Submodule path 'lib/lwip': checked out '239918ccc173cb2c2a62f41a40fd893f57faf1d6'
+  # Submodule path 'lib/mbedtls': checked out 'a77287f8fa6b76f74984121fdafc8563147435c8'
+  # Submodule path 'lib/tinyusb': checked out '86c416d4c0fb38432460b3e11b08b9de76941bf5'
+#+END_SRC
+
+
+If you forgot this step and you're using the =Pico Wireless= board, then you will see the following error when trying to run your project ~cmake~ command:
+
+#+BEGIN_SRC bash
+  # CMake Warning at /Users/wison/pico/pico-sdk/src/rp2_common/tinyusb/CMakeLists.txt:10 (message):
+  #   TinyUSB submodule has not been initialized; USB support will be unavailable
+  #
+  #   hint: try 'git submodule update --init' from your SDK directory
+  #   (/Users/wison/pico/pico-sdk).
+  #
+  #
+  # CMake Warning at /Users/wison/pico/pico-sdk/src/rp2_common/pico_btstack/CMakeLists.txt:10 (message):
+  #   btstack submodule has not been initialized; Pico W BLE support will be
+  #   unavailable.
+  #
+  #               hint: try 'git submodule update --init' from your SDK directory (/Users/wison/pico/pico-sdk).
+  #
+  #
+  # CMake Warning at /Users/wison/pico/pico-sdk/src/rp2_common/pico_cyw43_driver/CMakeLists.txt:11 (message):
+  #   cyw43-driver submodule has not been initialized; Pico W wireless support
+  #   will be unavailable
+  #
+  #   hint: try 'git submodule update --init' from your SDK directory
+  #   (/Users/wison/pico/pico-sdk).
+  #
+  #
+  # CMake Warning at /Users/wison/pico/pico-sdk/src/rp2_common/pico_lwip/CMakeLists.txt:10 (message):
+  #   LWIP submodule has not been initialized; Pico W wireless support will be
+  #   unavailable
+  #
+  #   #hint: try 'git submodule update --init' from your SDK directory
+  #   (/Users/wison/pico/pico-sdk).
+#+END_SRC
+

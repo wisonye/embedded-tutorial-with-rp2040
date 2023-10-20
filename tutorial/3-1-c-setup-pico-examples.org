@@ -1,0 +1,94 @@
+* Setup =Pico Examples=
+
+** 1. Clone examples repo
+
+#+BEGIN_SRC bash
+  git clone --depth=1 git@github.com:raspberrypi/pico-examples.git
+#+END_SRC
+
+
+** 2. Configure and build all examples
+
+You have to run ~cmake~ in the root folder!!!
+
+*** Configure
+
+Plz replace the =~/pico/pico-sdk= to your correct path!!!
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  cmake -DPICO_BOARD=pico_w -S ./ -B ./build
+#+END_SRC
+
+If you install the =ARM GNUI Toolchain= via ARM official website (download zig file and unzip), then you need to use ~PICO_TOOLCHAIN_PATH~ env var to run the ~cmake~ command:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+  cmake -DPICO_BOARD=pico_w -S ./ -B ./build
+#+END_SRC
+
+
+*** Build
+
+The building process takes a while, be patient:)
+
+#+BEGIN_SRC bash
+ cd build && make && cd .. 
+#+END_SRC
+
+
+*** Enable ~printf~ to USB
+
+If you want ~printf~ prints out to USB, then you have to open the particular example's ~CMakelists.txt~ and add the following lines:
+
+#+BEGIN_SRC cmake
+#
+# Enalbe serial port on USB per target
+#
+pico_enable_stdio_usb(BINARY_NAME_HERE 1)
+pico_enable_stdio_uart(BINARY_NAME_HERE 0)
+#+END_SRC
+
+
+For example, if you want =hello_timer= example print to USB:
+
+#+BEGIN_SRC bash
+  nvim timer/hello_timer/CMakeLists.txt 
+
+  # Add the following lines:
+
+  #
+  # Enalbe serial port on USB per target
+  #
+  pico_enable_stdio_usb(hello_timer 1)
+  pico_enable_stdio_uart(hello_timer 0)
+#+END_SRC
+  
+Save and re-configure:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+  cmake -DPICO_BOARD=pico_w -S ./ -B ./build
+#+END_SRC
+
+
+And then re-build again:
+
+#+BEGIN_SRC bash
+ cd build && make && cd .. 
+#+END_SRC
+
+Finally, hold down the =BOOTSEL= button and plug the pico board in, copy the =uf2= file to run:
+
+#+BEGIN_SRC bash
+  cp -rvf build/timer/hello_timer/hello_timer.uf2 /Volumes/RPI-RP2/#+END_SRC
+#+END_SRC
+
+Open =minicom= to view the output:
+
+#+BEGIN_SRC bash
+  # Change the '/dev/tty.usbmodem14701' to your serail port device!!!
+  minicom --device /dev/tty.usbmodem14701 --baudrate 115200 --noinit
+#+END_SRC
