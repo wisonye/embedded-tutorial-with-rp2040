@@ -4,3 +4,7 @@ clangd.core
 build.log
 zig-cache
 zig-out
+c-demos/**/build
+c-demos/**/build.log
+zig-demos/**/zig-cache
+zig-demos/**/zig-out
