@@ -60,7 +60,7 @@ typedef volatile u32 reg_u32;
 //
 void simulate_delay(void) {
 	volatile uint32_t _ = 0;
-	for (uint32_t i=0; i<CLK_SPEED; i++) {
+	for (uint32_t i=0; i<ONE_EIGHTH_SECOND_DELAY; i++) {
 		_ = i;
 	}
 }

@@ -6,5 +6,6 @@ zig-cache
 zig-out
 c-demos/**/build
 c-demos/**/build.log
+c-demos/**/.cache
 zig-demos/**/zig-cache
 zig-demos/**/zig-out
