@@ -1,0 +1,429 @@
+* How =cmake= build your pico program
+
+When you run ~c-demos/{PROJECT}/build.sh~, =cmake= builds your pico binary. Actually, that process is very complicated and you might want to what's happening under the hood, that's why this file exists.
+
+The content of this file actually comes from the ~make VERBOSE=true~ output, let's break it down step-by-step:
+
+** 1. Create the second stage bootloader
+
+It use a =python= program ~{PICO_SDK_PATH}/src/rp2_common/boot_stage2/pad_checksum~ to run a checksum of the file ~build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin~ to generate the final checksum file ~build/pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S~.
+
+That checksum file is the second stage of the boot sequence which is described on page 130 of the RP2040 datasheet (chapter 2.7 and 2.8), its content looks like this:
+
+#+BEGIN_SRC bash
+  # // Padded and checksummed version of: build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin
+
+  # .cpu cortex-m0plus
+  # .thumb
+
+  # .section .boot2, "ax"
+
+  # .byte 0x00, 0xb5, 0x32, 0x4b, 0x21, 0x20, 0x58, 0x60, 0x98, 0x68, 0x02, 0x21, 0x88, 0x43, 0x98, 0x60
+  # .byte 0xd8, 0x60, 0x18, 0x61, 0x58, 0x61, 0x2e, 0x4b, 0x00, 0x21, 0x99, 0x60, 0x02, 0x21, 0x59, 0x61
+  # .byte 0x01, 0x21, 0xf0, 0x22, 0x99, 0x50, 0x2b, 0x49, 0x19, 0x60, 0x01, 0x21, 0x99, 0x60, 0x35, 0x20
+  # .byte 0x00, 0xf0, 0x44, 0xf8, 0x02, 0x22, 0x90, 0x42, 0x14, 0xd0, 0x06, 0x21, 0x19, 0x66, 0x00, 0xf0
+  # .byte 0x34, 0xf8, 0x19, 0x6e, 0x01, 0x21, 0x19, 0x66, 0x00, 0x20, 0x18, 0x66, 0x1a, 0x66, 0x00, 0xf0
+  # .byte 0x2c, 0xf8, 0x19, 0x6e, 0x19, 0x6e, 0x19, 0x6e, 0x05, 0x20, 0x00, 0xf0, 0x2f, 0xf8, 0x01, 0x21
+  # .byte 0x08, 0x42, 0xf9, 0xd1, 0x00, 0x21, 0x99, 0x60, 0x1b, 0x49, 0x19, 0x60, 0x00, 0x21, 0x59, 0x60
+  # .byte 0x1a, 0x49, 0x1b, 0x48, 0x01, 0x60, 0x01, 0x21, 0x99, 0x60, 0xeb, 0x21, 0x19, 0x66, 0xa0, 0x21
+  # .byte 0x19, 0x66, 0x00, 0xf0, 0x12, 0xf8, 0x00, 0x21, 0x99, 0x60, 0x16, 0x49, 0x14, 0x48, 0x01, 0x60
+  # .byte 0x01, 0x21, 0x99, 0x60, 0x01, 0xbc, 0x00, 0x28, 0x00, 0xd0, 0x00, 0x47, 0x12, 0x48, 0x13, 0x49
+  # .byte 0x08, 0x60, 0x03, 0xc8, 0x80, 0xf3, 0x08, 0x88, 0x08, 0x47, 0x03, 0xb5, 0x99, 0x6a, 0x04, 0x20
+  # .byte 0x01, 0x42, 0xfb, 0xd0, 0x01, 0x20, 0x01, 0x42, 0xf8, 0xd1, 0x03, 0xbd, 0x02, 0xb5, 0x18, 0x66
+  # .byte 0x18, 0x66, 0xff, 0xf7, 0xf2, 0xff, 0x18, 0x6e, 0x18, 0x6e, 0x02, 0xbd, 0x00, 0x00, 0x02, 0x40
+  # .byte 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x07, 0x00, 0x00, 0x03, 0x5f, 0x00, 0x21, 0x22, 0x00, 0x00
+  # .byte 0xf4, 0x00, 0x00, 0x18, 0x22, 0x20, 0x00, 0xa0, 0x00, 0x01, 0x00, 0x10, 0x08, 0xed, 0x00, 0xe0
+  # .byte 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x74, 0xb2, 0x4e, 0x7a
+#+END_SRC
+
+Here is the related make command log:
+
+#+BEGIN_SRC bash
+  [  1%] Building ASM object pico-sdk/src/rp2_common/boot_stage2/CMakeFiles/bs2_default.dir/compile_time_choice.S.obj
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/arm-none-eabi-gcc -DPICO_BOARD=\"pico_w\" -DPICO_BUILD=1 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -I/home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/asminclude -I/home/wison/pico/pico-sdk/src/rp2040/hardware_regs/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_base/include -I/home/wison/pico/pico-sdk/src/common/pico_base/include -Ibuild/generated/pico_base -I/home/wison/pico/pico-sdk/src/boards/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_platform/include -I/home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/include -mcpu=cortex-m0plus -mthumb -O3 -DNDEBUG -o CMakeFiles/bs2_default.dir/compile_time_choice.S.obj   -c /home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/compile_time_choice.S
+
+  [  3%] Linking ASM executable bs2_default.elf
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/cmake -E cmake_link_script CMakeFiles/bs2_default.dir/link.txt --verbose=true
+  /usr/bin/arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -O3 -DNDEBUG -Wl,--build-id=none --specs=nosys.specs -nostartfiles -Wl,--script=/home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/boot_stage2.ld -Wl,-Map=bs2_default.elf.map CMakeFiles/bs2_default.dir/compile_time_choice.S.obj -o bs2_default.elf 
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/arm-none-eabi-objdump -h build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.elf > bs2_default.dis
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/arm-none-eabi-objdump -d build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.elf >> bs2_default.dis
+
+  make[2]: Leaving directory 'build'
+
+  [  3%] Built target bs2_default
+
+  [  4%] Generating bs2_default.bin
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/arm-none-eabi-objcopy -Obinary build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.elf build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin
+
+  [  6%] Generating bs2_default_padded_checksummed.S
+
+  cd build/pico-sdk/src/rp2_common/boot_stage2 && /usr/bin/python3.11 /home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/pad_checksum -s 0xffffffff build/pico-sdk/src/rp2_common/boot_stage2/bs2_default.bin build/pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S
+
+  make[2]: Leaving directory 'build'
+  [  6%] Built target bs2_default_padded_checksummed_asm
+#+END_SRC
+
+
+** 2. Create =elf2uf2= binary
+
+Your compiled program needs to be ~.uf2~ format before you're able to flash to your pico in USB mode.
+
+That's why the following settings are in your ~c-demos/{PROJECT}/CMakeLists.txt~:
+
+#+BEGIN_SRC cmake
+ #
+ # create map/bin/hex/uf2 file in addition to ELF.
+ #
+ pico_add_extra_outputs(${PROJECT_NAME})
+#+END_SRC
+
+That ~pico_add_extra_outputs~ function is defined in ~{PICO_SDK_PATH}/src/rp2_common.cmake~ and it produces the extra file formats:
+
+#+BEGIN_SRC cmake
+ function(pico_add_extra_outputs TARGET)
+   pico_add_hex_output(${TARGET})
+   pico_add_bin_output(${TARGET})
+   pico_add_dis_output(${TARGET})
+
+   if (NOT PICO_NO_UF2)
+     pico_add_uf2_output(${TARGET})
+   endif()
+ endfunction()
+#+END_SRC
+
+And the ~pico_add_uf2_output~ function is defined in ~{PICO_SDK_PATH}/tools/CMakeLists.txt~ and it compiles the ELF2UF2 source code (~{PICO_SDK_PATH}/tools/elf2uf2/main.cpp~) into binary (~demos/{PROJECT_NAME}/build/elf2uf2/elf2uf2~), and use that ~elf2uf2~ to conver your ~.elf~ to ~.uf2~:
+
+#+BEGIN_SRC bash
+  # Usage: elf2uf2 (-v) <input ELF file> <output UF2 file>
+#+END_SRC
+
+
+Here is the related make command log:
+
+#+BEGIN_SRC bash
+  [  7%] Creating directories for 'ELF2UF2Build'
+  [ 13%] Performing configure step for 'ELF2UF2Build'
+  [ 15%] Performing build step for 'ELF2UF2Build'
+  cd build/elf2uf2 && make
+
+  [ 50%] Building CXX object CMakeFiles/elf2uf2.dir/main.cpp.o
+  /usr/bin/c++  -I/home/wison/pico/pico-sdk/src/common/boot_uf2/include -std=gnu++14 -MD -MT CMakeFiles/elf2uf2.dir/main.cpp.o -MF CMakeFiles/elf2uf2.dir/main.cpp.o.d -o CMakeFiles/elf2uf2.dir/main.cpp.o -c /home/wison/pico/pico-sdk/tools/elf2uf2/main.cpp
+
+  [100%] Linking CXX executable elf2uf2
+  /usr/bin/cmake -E cmake_link_script CMakeFiles/elf2uf2.dir/link.txt --verbose=true
+  /usr/bin/c++ CMakeFiles/elf2uf2.dir/main.cpp.o -o elf2uf2 
+
+  [100%] Built target elf2uf2
+  [ 18%] Built target ELF2UF2Build
+#+END_SRC
+
+
+** 3. Compile your program source file and all dependencies source files into ~.obj~ files
+
+#+BEGIN_SRC bash
+
+  #[ 19%] Building C object CMakeFiles/blinking-led.dir/src/blinking-led.c.obj
+  /usr/bin/arm-none-eabi-gcc -DLIB_PICO_BIT_OPS=1 -DLIB_PICO_BIT_OPS_PICO=1 -DLIB_PICO_DIVIDER=1 -DLIB_PICO_DIVIDER_HARDWARE=1 -DLIB_PICO_DOUBLE=1 -DLIB_PICO_DOUBLE_PICO=1 -DLIB_PICO_FLOAT=1 -DLIB_PICO_FLOAT_PICO=1 -DLIB_PICO_INT64_OPS=1 -DLIB_PICO_INT64_OPS_PICO=1 -DLIB_PICO_MALLOC=1 -DLIB_PICO_MEM_OPS=1 -DLIB_PICO_MEM_OPS_PICO=1 -DLIB_PICO_PLATFORM=1 -DLIB_PICO_PRINTF=1 -DLIB_PICO_PRINTF_PICO=1 -DLIB_PICO_RUNTIME=1 -DLIB_PICO_STANDARD_LINK=1 -DLIB_PICO_STDIO=1 -DLIB_PICO_STDLIB=1 -DLIB_PICO_SYNC=1 -DLIB_PICO_SYNC_CRITICAL_SECTION=1 -DLIB_PICO_SYNC_MUTEX=1 -DLIB_PICO_SYNC_SEM=1 -DLIB_PICO_TIME=1 -DLIB_PICO_UTIL=1 -DPICO_BOARD=\"pico_w\" -DPICO_BUILD=1 -DPICO_CMAKE_BUILD_TYPE=\"Release\" -DPICO_COPY_TO_RAM=0 -DPICO_CXX_ENABLE_EXCEPTIONS=0 -DPICO_NO_FLASH=0 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -DPICO_TARGET_NAME=\"blinking-led\" -DPICO_USE_BLOCKED_RAM=0 -Isrc -I/home/wison/pico/pico-sdk/src/common/pico_stdlib/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_gpio/include -I/home/wison/pico/pico-sdk/src/common/pico_base/include -Ibuild/generated/pico_base -I/home/wison/pico/pico-sdk/src/boards/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_platform/include -I/home/wison/pico/pico-sdk/src/rp2040/hardware_regs/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_base/include -I/home/wison/pico/pico-sdk/src/rp2040/hardware_structs/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_claim/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_sync/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_irq/include -I/home/wison/pico/pico-sdk/src/common/pico_sync/include -I/home/wison/pico/pico-sdk/src/common/pico_time/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_timer/include -I/home/wison/pico/pico-sdk/src/common/pico_util/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_uart/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_resets/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_clocks/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_pll/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_vreg/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_watchdog/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_xosc/include -I/home/wison/pico/pico-sdk/src/rp2_common/hardware_divider/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_runtime/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_printf/include -I/home/wison/pico/pico-sdk/src/common/pico_bit_ops/include -I/home/wison/pico/pico-sdk/src/common/pico_divider/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_double/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_float/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_malloc/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_bootrom/include -I/home/wison/pico/pico-sdk/src/common/pico_binary_info/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_stdio/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_int64_ops/include -I/home/wison/pico/pico-sdk/src/rp2_common/pico_mem_ops/include -I/home/wison/pico/pico-sdk/src/rp2_common/boot_stage2/include -isystem /usr/lib/gcc/arm-none-eabi/13.2.0/include -isystem /usr/lib/gcc/arm-none-eabi/13.2.0/include-fixed -isystem /usr/arm-none-eabi/include -mcpu=cortex-m0plus -mthumb -O3 -DNDEBUG -ffunction-sections -fdata-sections -MD -MT CMakeFiles/blinking-led.dir/src/blinking-led.c.obj -MF CMakeFiles/blinking-led.dir/src/blinking-led.c.obj.d -o CMakeFiles/blinking-led.dir/src/blinking-led.c.obj -c src/blinking-led.c
+
+  # ......
+#+END_SRC
+
+
+** 4. Link all ~.obj~ files and ~bs2_default_padded_checksummed.S~ to produce the ~.elf~ output 
+
+#+BEGIN_SRC bash
+  
+/usr/bin/arm-none-eabi-g++ -mcpu=cortex-m0plus -mthumb -O3 -DNDEBUG -Wl,--build-id=none --specs=nosys.specs -Wl,--wrap=sprintf -Wl,--wrap=snprintf -Wl,--wrap=vsnprintf -Wl,--wrap=__clzsi2 -Wl,--wrap=__clzdi2 -Wl,--wrap=__ctzsi2 -Wl,--wrap=__ctzdi2 -Wl,--wrap=__popcountsi2 -Wl,--wrap=__popcountdi2 -Wl,--wrap=__clz -Wl,--wrap=__clzl -Wl,--wrap=__clzll -Wl,--wrap=__aeabi_idiv -Wl,--wrap=__aeabi_idivmod -Wl,--wrap=__aeabi_ldivmod -Wl,--wrap=__aeabi_uidiv -Wl,--wrap=__aeabi_uidivmod -Wl,--wrap=__aeabi_uldivmod -Wl,--wrap=__aeabi_dadd -Wl,--wrap=__aeabi_ddiv -Wl,--wrap=__aeabi_dmul -Wl,--wrap=__aeabi_drsub -Wl,--wrap=__aeabi_dsub -Wl,--wrap=__aeabi_cdcmpeq -Wl,--wrap=__aeabi_cdrcmple -Wl,--wrap=__aeabi_cdcmple -Wl,--wrap=__aeabi_dcmpeq -Wl,--wrap=__aeabi_dcmplt -Wl,--wrap=__aeabi_dcmple -Wl,--wrap=__aeabi_dcmpge -Wl,--wrap=__aeabi_dcmpgt -Wl,--wrap=__aeabi_dcmpun -Wl,--wrap=__aeabi_i2d -Wl,--wrap=__aeabi_l2d -Wl,--wrap=__aeabi_ui2d -Wl,--wrap=__aeabi_ul2d -Wl,--wrap=__aeabi_d2iz -Wl,--wrap=__aeabi_d2lz -Wl,--wrap=__aeabi_d2uiz -Wl,--wrap=__aeabi_d2ulz -Wl,--wrap=__aeabi_d2f -Wl,--wrap=sqrt -Wl,--wrap=cos -Wl,--wrap=sin -Wl,--wrap=tan -Wl,--wrap=atan2 -Wl,--wrap=exp -Wl,--wrap=log -Wl,--wrap=ldexp -Wl,--wrap=copysign -Wl,--wrap=trunc -Wl,--wrap=floor -Wl,--wrap=ceil -Wl,--wrap=round -Wl,--wrap=sincos -Wl,--wrap=asin -Wl,--wrap=acos -Wl,--wrap=atan -Wl,--wrap=sinh -Wl,--wrap=cosh -Wl,--wrap=tanh -Wl,--wrap=asinh -Wl,--wrap=acosh -Wl,--wrap=atanh -Wl,--wrap=exp2 -Wl,--wrap=log2 -Wl,--wrap=exp10 -Wl,--wrap=log10 -Wl,--wrap=pow -Wl,--wrap=powint -Wl,--wrap=hypot -Wl,--wrap=cbrt -Wl,--wrap=fmod -Wl,--wrap=drem -Wl,--wrap=remainder -Wl,--wrap=remquo -Wl,--wrap=expm1 -Wl,--wrap=log1p -Wl,--wrap=fma -Wl,--wrap=__aeabi_lmul -Wl,--wrap=__aeabi_fadd -Wl,--wrap=__aeabi_fdiv -Wl,--wrap=__aeabi_fmul -Wl,--wrap=__aeabi_frsub -Wl,--wrap=__aeabi_fsub -Wl,--wrap=__aeabi_cfcmpeq -Wl,--wrap=__aeabi_cfrcmple -Wl,--wrap=__aeabi_cfcmple -Wl,--wrap=__aeabi_fcmpeq -Wl,--wrap=__aeabi_fcmplt -Wl,--wrap=__aeabi_fcmple -Wl,--wrap=__aeabi_fcmpge -Wl,--wrap=__aeabi_fcmpgt -Wl,--wrap=__aeabi_fcmpun -Wl,--wrap=__aeabi_i2f -Wl,--wrap=__aeabi_l2f -Wl,--wrap=__aeabi_ui2f -Wl,--wrap=__aeabi_ul2f -Wl,--wrap=__aeabi_f2iz -Wl,--wrap=__aeabi_f2lz -Wl,--wrap=__aeabi_f2uiz -Wl,--wrap=__aeabi_f2ulz -Wl,--wrap=__aeabi_f2d -Wl,--wrap=sqrtf -Wl,--wrap=cosf -Wl,--wrap=sinf -Wl,--wrap=tanf -Wl,--wrap=atan2f -Wl,--wrap=expf -Wl,--wrap=logf -Wl,--wrap=ldexpf -Wl,--wrap=copysignf -Wl,--wrap=truncf -Wl,--wrap=floorf -Wl,--wrap=ceilf -Wl,--wrap=roundf -Wl,--wrap=sincosf -Wl,--wrap=asinf -Wl,--wrap=acosf -Wl,--wrap=atanf -Wl,--wrap=sinhf -Wl,--wrap=coshf -Wl,--wrap=tanhf -Wl,--wrap=asinhf -Wl,--wrap=acoshf -Wl,--wrap=atanhf -Wl,--wrap=exp2f -Wl,--wrap=log2f -Wl,--wrap=exp10f -Wl,--wrap=log10f -Wl,--wrap=powf -Wl,--wrap=powintf -Wl,--wrap=hypotf -Wl,--wrap=cbrtf -Wl,--wrap=fmodf -Wl,--wrap=dremf -Wl,--wrap=remainderf -Wl,--wrap=remquof -Wl,--wrap=expm1f -Wl,--wrap=log1pf -Wl,--wrap=fmaf -Wl,--wrap=malloc -Wl,--wrap=calloc -Wl,--wrap=realloc -Wl,--wrap=free -Wl,--wrap=memcpy -Wl,--wrap=memset -Wl,--wrap=__aeabi_memcpy -Wl,--wrap=__aeabi_memset -Wl,--wrap=__aeabi_memcpy4 -Wl,--wrap=__aeabi_memset4 -Wl,--wrap=__aeabi_memcpy8 -Wl,--wrap=__aeabi_memset8 -Wl,-Map=blinking-led.elf.map -Wl,--script=/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/memmap_default.ld -Wl,-z,max-page-size=4096 -Wl,--gc-sections -Wl,--no-warn-rwx-segments -Wl,--wrap=printf -Wl,--wrap=vprintf -Wl,--wrap=puts -Wl,--wrap=putchar -Wl,--wrap=getchar "CMakeFiles/blinking-led.dir/src/blinking-led.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_platform/platform.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_claim/claim.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_irq/irq_handler_chain.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/sem.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/lock_core.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/mutex.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/critical_section.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_time/time.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_time/timeout_helper.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/datetime.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/pheap.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/queue.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_vreg/vreg.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_math.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_aeabi.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_init_rom.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_math.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_malloc/pico_malloc.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj" "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj" -o blinking-led.elf  pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S 
+#+END_SRC
+
+
+** 5. Convert ~elf~ to ~uf2~ 
+
+#+BEGIN_SRC bash
+  elf2uf2/elf2uf2 build/{PROJECT_NAME}.elf {PROJECT_NAME}.uf2
+#+END_SRC
+
+
+** 6. Optional explanation
+
+As you can see, that =arm-none-eabi-gcc= and =arm-none-eabi-g++= command are super compilcated, let's take the link command and break it down to see:
+
+
+#+BEGIN_SRC bash
+  #
+  # Link step detail with comment
+  #
+  /usr/bin/arm-none-eabi-g++  # Compiler, it will call `arm-none-eabi-ld` as linker
+
+  -mcpu=cortex-m0plus         # Specify the name of the target processor,
+  -mthumb                     # Use `Thumb` cpu instruction set
+  -O3                         # Optimization level 3
+  -DNDEBUG                    # No Debug
+
+
+  # `-W` prefix means pass the following option to linker `arm-none-eabi-ld`
+  -Wl,--build-id=none         # Request  the creation of a ".note.gnu.build-id" ELF note section or a ".buildid" COFF section.
+                              # Passing "none" for style disables the setting from any "--build-id" options earlier on the command line.
+  --specs=nosys.specs
+
+
+  # --wrap=symbol
+  #     Use a wrapper function for symbol.  Any undefined reference to symbol will be resolved to "__wrap_symbol".  Any undefined reference to "__real_symbol" will be resolved to symbol.
+  #
+  #     This  can  be  used  to  provide  a  wrapper  for  a  system  function.   The  wrapper  function  should  be called "__wrap_symbol".  If it wishes to call the system function, it should call
+  #     "__real_symbol".
+  #
+  #     Here is a trivial example:
+  #
+  #             void *
+  #             __wrap_malloc (size_t c)
+  #             {
+  #               printf ("malloc called with %zu\n", c);
+  #               return __real_malloc (c);
+  #             }
+  #
+  #     If you link other code with this file using --wrap malloc, then all calls to "malloc" will call the function "__wrap_malloc" instead.  The call to  "__real_malloc"  in  "__wrap_malloc"  will
+  #     call the real "malloc" function.
+  #
+  # I think the purpose of using wrapper function is you can call `stdio.h` in your program, but it actually call the pico SDK implementation version instead!!!
+  #
+  -Wl,--wrap=sprintf
+  -Wl,--wrap=snprintf
+  -Wl,--wrap=vsnprintf
+  -Wl,--wrap=__clzsi2
+  -Wl,--wrap=__clzdi2
+  -Wl,--wrap=__ctzsi2
+  -Wl,--wrap=__ctzdi2
+  -Wl,--wrap=__popcountsi2
+  -Wl,--wrap=__popcountdi2
+  -Wl,--wrap=__clz
+  -Wl,--wrap=__clzl
+  -Wl,--wrap=__clzll
+  -Wl,--wrap=__aeabi_idiv
+  -Wl,--wrap=__aeabi_idivmod
+  -Wl,--wrap=__aeabi_ldivmod
+  -Wl,--wrap=__aeabi_uidiv
+  -Wl,--wrap=__aeabi_uidivmod
+  -Wl,--wrap=__aeabi_uldivmod
+  -Wl,--wrap=__aeabi_dadd
+  -Wl,--wrap=__aeabi_ddiv
+  -Wl,--wrap=__aeabi_dmul
+  -Wl,--wrap=__aeabi_drsub
+  -Wl,--wrap=__aeabi_dsub
+  -Wl,--wrap=__aeabi_cdcmpeq
+  -Wl,--wrap=__aeabi_cdrcmple
+  -Wl,--wrap=__aeabi_cdcmple
+  -Wl,--wrap=__aeabi_dcmpeq
+  -Wl,--wrap=__aeabi_dcmplt
+  -Wl,--wrap=__aeabi_dcmple
+  -Wl,--wrap=__aeabi_dcmpge
+  -Wl,--wrap=__aeabi_dcmpgt
+  -Wl,--wrap=__aeabi_dcmpun
+  -Wl,--wrap=__aeabi_i2d
+  -Wl,--wrap=__aeabi_l2d
+  -Wl,--wrap=__aeabi_ui2d
+  -Wl,--wrap=__aeabi_ul2d
+  -Wl,--wrap=__aeabi_d2iz
+  -Wl,--wrap=__aeabi_d2lz
+  -Wl,--wrap=__aeabi_d2uiz
+  -Wl,--wrap=__aeabi_d2ulz
+  -Wl,--wrap=__aeabi_d2f
+  -Wl,--wrap=sqrt
+  -Wl,--wrap=cos
+  -Wl,--wrap=sin
+  -Wl,--wrap=tan
+  -Wl,--wrap=atan2
+  -Wl,--wrap=exp
+  -Wl,--wrap=log
+  -Wl,--wrap=ldexp
+  -Wl,--wrap=copysign
+  -Wl,--wrap=trunc
+  -Wl,--wrap=floor
+  -Wl,--wrap=ceil
+  -Wl,--wrap=round
+  -Wl,--wrap=sincos
+  -Wl,--wrap=asin
+  -Wl,--wrap=acos
+  -Wl,--wrap=atan
+  -Wl,--wrap=sinh
+  -Wl,--wrap=cosh
+  -Wl,--wrap=tanh
+  -Wl,--wrap=asinh
+  -Wl,--wrap=acosh
+  -Wl,--wrap=atanh
+  -Wl,--wrap=exp2
+  -Wl,--wrap=log2
+  -Wl,--wrap=exp10
+  -Wl,--wrap=log10
+  -Wl,--wrap=pow
+  -Wl,--wrap=powint
+  -Wl,--wrap=hypot
+  -Wl,--wrap=cbrt
+  -Wl,--wrap=fmod
+  -Wl,--wrap=drem
+  -Wl,--wrap=remainder
+  -Wl,--wrap=remquo
+  -Wl,--wrap=expm1
+  -Wl,--wrap=log1p
+  -Wl,--wrap=fma
+  -Wl,--wrap=__aeabi_lmul
+  -Wl,--wrap=__aeabi_fadd
+  -Wl,--wrap=__aeabi_fdiv
+  -Wl,--wrap=__aeabi_fmul
+  -Wl,--wrap=__aeabi_frsub
+  -Wl,--wrap=__aeabi_fsub
+  -Wl,--wrap=__aeabi_cfcmpeq
+  -Wl,--wrap=__aeabi_cfrcmple
+  -Wl,--wrap=__aeabi_cfcmple
+  -Wl,--wrap=__aeabi_fcmpeq
+  -Wl,--wrap=__aeabi_fcmplt
+  -Wl,--wrap=__aeabi_fcmple
+  -Wl,--wrap=__aeabi_fcmpge
+  -Wl,--wrap=__aeabi_fcmpgt
+  -Wl,--wrap=__aeabi_fcmpun
+  -Wl,--wrap=__aeabi_i2f
+  -Wl,--wrap=__aeabi_l2f
+  -Wl,--wrap=__aeabi_ui2f
+  -Wl,--wrap=__aeabi_ul2f
+  -Wl,--wrap=__aeabi_f2iz
+  -Wl,--wrap=__aeabi_f2lz
+  -Wl,--wrap=__aeabi_f2uiz
+  -Wl,--wrap=__aeabi_f2ulz
+  -Wl,--wrap=__aeabi_f2d
+  -Wl,--wrap=sqrtf
+  -Wl,--wrap=cosf
+  -Wl,--wrap=sinf
+  -Wl,--wrap=tanf
+  -Wl,--wrap=atan2f
+  -Wl,--wrap=expf
+  -Wl,--wrap=logf
+  -Wl,--wrap=ldexpf
+  -Wl,--wrap=copysignf
+  -Wl,--wrap=truncf
+  -Wl,--wrap=floorf
+  -Wl,--wrap=ceilf
+  -Wl,--wrap=roundf
+  -Wl,--wrap=sincosf
+  -Wl,--wrap=asinf
+  -Wl,--wrap=acosf
+  -Wl,--wrap=atanf
+  -Wl,--wrap=sinhf
+  -Wl,--wrap=coshf
+  -Wl,--wrap=tanhf
+  -Wl,--wrap=asinhf
+  -Wl,--wrap=acoshf
+  -Wl,--wrap=atanhf
+  -Wl,--wrap=exp2f
+  -Wl,--wrap=log2f
+  -Wl,--wrap=exp10f
+  -Wl,--wrap=log10f
+  -Wl,--wrap=powf
+  -Wl,--wrap=powintf
+  -Wl,--wrap=hypotf
+  -Wl,--wrap=cbrtf
+  -Wl,--wrap=fmodf
+  -Wl,--wrap=dremf
+  -Wl,--wrap=remainderf
+  -Wl,--wrap=remquof
+  -Wl,--wrap=expm1f
+  -Wl,--wrap=log1pf
+  -Wl,--wrap=fmaf
+  -Wl,--wrap=malloc
+  -Wl,--wrap=calloc
+  -Wl,--wrap=realloc
+  -Wl,--wrap=free
+  -Wl,--wrap=memcpy
+  -Wl,--wrap=memset
+  -Wl,--wrap=__aeabi_memcpy
+  -Wl,--wrap=__aeabi_memset
+  -Wl,--wrap=__aeabi_memcpy4
+  -Wl,--wrap=__aeabi_memset4
+  -Wl,--wrap=__aeabi_memcpy8
+  -Wl,--wrap=__aeabi_memset8
+  -Wl,--wrap=printf
+  -Wl,--wrap=vprintf
+  -Wl,--wrap=puts
+  -Wl,--wrap=putchar
+  -Wl,--wrap=getchar
+
+  #
+  # Print a link map to the file which contains the memory layout of all symbols
+  #
+  -Wl,-Map=blinking-led.elf.map
+
+  #
+  # Specify the MCU linker which contains the correct memory layout
+  #
+  -Wl,--script=/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/memmap_default.ld
+
+  -Wl,-z,max-page-size=4096       # Max memory page size
+  -Wl,--gc-sections               # Enable garbage collection of unused input sections.  It is ignored on targets that do not support this option.
+  -Wl,--no-warn-rwx-segments      #  Warn  if  the  linker  creates  a  loadable,  non-zero  sized  segment that has all three of the read, write and execute permission flags set.
+
+  # Your program object file
+  "CMakeFiles/blinking-led.dir/src/blinking-led.c.obj"
+
+  # All dependencies object file
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_platform/platform.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_claim/claim.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_irq/irq_handler_chain.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/sem.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/lock_core.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/mutex.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_sync/critical_section.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_time/time.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_time/timeout_helper.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/datetime.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/pheap.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/common/pico_util/queue.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_vreg/vreg.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_math.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_aeabi.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_init_rom.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_math.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_malloc/pico_malloc.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj"
+  "CMakeFiles/blinking-led.dir/home/wison/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj"
+
+  #
+  # The elf output file
+  #
+  -o blinking-led.elf
+
+  #
+  # This is the Pico second stage bootloader, if you don't provide this, you will see the following linker error:
+  #
+  # /usr/lib/gcc/arm-none-eabi/13.2.0/../../../../arm-none-eabi/bin/ld: ERROR: Pico second stage bootloader must be 256 bytes in size
+  # collect2: error: ld returned 1 exit status
+  #
+  pico-sdk/src/rp2_common/boot_stage2/bs2_default_padded_checksummed.S
+#+END_SRC

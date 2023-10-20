@@ -37,7 +37,7 @@ The following data sheets are the major knowledge sources that we will learn fro
 
 *** Pico/Pico W C/C++ SDK related
 
-Although we target to learn how to use MCU registers to control MCU, in the other way, you are still able to choose to use the existing C/C++ SDK (to call APIs) to deal with RP2040 if you need the fast development cycle. 
+In the first demo, we will learn how to use MCU registers to control MCU, as that's fundamental to how the MCU works. But usually, you should choose to use the existing C/C++ SDK (to call APIs) to deal with RP2040 to get a faster development cycle. 
 
 - [[https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf][Pico W C/C++ SDK]]
 
@@ -50,6 +50,25 @@ Although we target to learn how to use MCU registers to control MCU, in the othe
 ** Folder structure
 
 #+BEGIN_SRC bash
+  .
+  ├── c-demos                              # C demos
+  │   ├── cmake-build-process.org          # Explain how cmake builds your pico program
+  │   ├── blinking-led-register            # Particular demo project
+  │   │   ├── build.sh                     # Project scope build script
+  │   │   ├── CMakeLists.txt               # Project scope CMake configuration file
+  │   │   ├── configure.sh                 # Project scope configure script to init CMake
+  │   │   ├── flash_linux.sh               # Project scope script to flash your program to Pico hardware via USB-C
+  │   │   ├── pico_sdk_import.cmake        # `pico-sdk CMake` configuration (copied from PICO_SDK)
+  │   │   ├── README.md                    # Project scope README
+  │   │   └── src                          # source code files inside
+  │   └── ...                              # Another C demos projects
+  ├── zig-demos                            # Zig demos
+  ├── README.org                           # This file
+  └── tutorial                             # Tutorials fold
+      ├── 1-glossary-of-terms.org          # Tutorail chapter files
+      ├── 2-basic-concepts.org             # Tutorail chapter files
+      └── ...                              # Tutorail chapter files
+
 #+END_SRC
 
 
@@ -58,3 +77,22 @@ Although we target to learn how to use MCU registers to control MCU, in the othe
 [[file:tutorial/1-glossary-of-terms.org][1. Glossary of terms]]
 
 [[file:tutorial/2-basic-concepts.org][2. Basic concepts]]
+
+3. How MCU works
+
+4. How =RP2040= boots
+
+5. Install tooling
+
+6. Write your first program and run on =Pico W=
+
+   1.1  Bitwise operations to control =RP2040= register
+
+   # Pure register without including SDK
+   41K Oct 20 20:25 blinking-led.elf*
+   17K Oct 20 20:25 blinking-led.uf2
+
+   # Use SDK GPIO
+   
+
+   1.2 
