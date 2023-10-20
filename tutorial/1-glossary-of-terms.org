@@ -1,36 +1,53 @@
 * Glossary of terms
 
-| Terms            | Description                                                       |
-|------------------+-------------------------------------------------------------------|
-| [ Basic ]        |                                                                   |
-| =MCU=              | Microcontroller Unit, [[https://en.wikipedia.org/wiki/Microcontroller][wiki-link]]                                   |
-| =SOC=              | System-on-chip, [[https://en.wikipedia.org/wiki/System_on_a_chip][wiki-link]]                                         |
-| =SBC=              | Single Board Computer, [[https://en.wikipedia.org/wiki/Single-board_computer][wiki-link]]                                  |
-|                  |                                                                   |
-| [ ARM Cortex-M ] | [[https://en.wikipedia.org/wiki/ARM_Cortex-M][wiki-link]]                                                         |
-| =AMBA=             | Arm Advanced Microcontroller Bus Architecture, [[https://en.wikipedia.org/wiki/Advanced_Microcontroller_Bus_Architecture][wiki-link]]          |
-| =AHB=              | Advanced High-performance Bus, wiki-link                          |
-| =APB=              | Advanced Peripheral Bus, wiki-link                                |
-| =AHB-Lite=         | It's a subset of AHB formally defined in the AMBA 3 standard.     |
-|                  | This subset simplifies the design for a bus with a single master. |
-| =BPU=              | Breakpoint Unit                                                   |
-| =C-ABI=            | C Application Binary Interface                                    |
-| =CTI=              | Cross Trigger Interface Unit                                      |
-| =DWT=              | Data Watchpoint and Trace                                         |
-| =FPU=              | Floating-point Unit, [[https://en.wikipedia.org/wiki/Floating-point_unit][wiki-link]]                                    |
-| =JTAG=             | Joint Test Action Group, [[https://en.wikipedia.org/wiki/JTAG][wiki-link]]                                |
-| =MPU=              | Memory Protection Unit, [[https://en.wikipedia.org/wiki/Memory_protection_unit][wiki-link]]                                 |
-| =MTB=              | Micro Trace Buffer                                                |
-| =NMI=              | Non-Maskable Interrupt                                            |
-| =NVIC=             | Nested Vectored Interrupt Controller                              |
-| =SWO=              | Serial Wire Output                                                |
-| =WFE=              | Wait for event                                                    |
-| =WFI=              | Wait for interrupt                                                |
-| =WIC=              | Wake-up interrupt controller                                      |
-| =WIC=              | Wake-up Interrupt Controller                                      |
-|                  |                                                                   |
-| [ RP2040 ]       |                                                                   |
-| =I2C=              | Inter-Integrated Circuit, [[https://en.wikipedia.org/wiki/I%C2%B2C][wiki-link]]                               |
-| =SPI=              | Serial Peripheral Interface, [[https://en.wikipedia.org/wiki/Serial_Peripheral_Interface][wiki-link]]                            |
-| =XIP=              | Execute-in-place, [[https://en.wikipedia.org/wiki/Execute_in_place][wiki-link]]                                       |
-|                  |                                                                   |
+| Terms               | Description                                                                  |
+|---------------------+------------------------------------------------------------------------------|
+| [ Basic ]           |                                                                              |
+| =MCU=                 | Microcontroller Unit, [[https://en.wikipedia.org/wiki/Microcontroller][wiki-link]]                                              |
+| =SOC=                 | System-on-chip, [[https://en.wikipedia.org/wiki/System_on_a_chip][wiki-link]]                                                    |
+| =SBC=                 | Single Board Computer, [[https://en.wikipedia.org/wiki/Single-board_computer][wiki-link]]                                             |
+|                     |                                                                              |
+| [ CPU Architecture] | [[https://en.wikipedia.org/wiki/ARM_Cortex-M][wiki-link]]                                                                    |
+| =ARM=                 | Advanced RISC Machines (originally Acorn RISC Machine), [[https://en.wikipedia.org/wiki/ARM_architecture_family][wiki-link]]            |
+| =RISC=                | Reduced Instruction Set Computer, [[https://en.wikipedia.org/wiki/Reduced_instruction_set_computer][wiki-link]]                                  |
+| =CISC=                | Complex Instruction Set Computer, [[https://en.wikipedia.org/wiki/Complex_instruction_set_computer][wiki-link]]                                  |
+| =Thumb=               | ARM CPU instruction set                                                      |
+| =Thumb-2=             | ARM CPU instruction set                                                      |
+|                     |                                                                              |
+| [ ARM Cortex-M ]    | [[https://en.wikipedia.org/wiki/ARM_Cortex-M][wiki-link]]                                                                    |
+| =AMBA=                | Arm Advanced Microcontroller Bus Architecture, [[https://en.wikipedia.org/wiki/Advanced_Microcontroller_Bus_Architecture][wiki-link]]                     |
+| =AHB=                 | Advanced High-performance Bus, wiki-link                                     |
+| =APB=                 | Advanced Peripheral Bus, wiki-link                                           |
+| =AHB-Lite=            | It's a subset of AHB formally defined in the AMBA 3 standard.                |
+|                     | This subset simplifies the design for a bus with a single master.            |
+| =BPU=                 | Breakpoint Unit                                                              |
+| =C-ABI=               | C Application Binary Interface                                               |
+| =CTI=                 | Cross Trigger Interface Unit                                                 |
+| =DAP=                 | Debugg access port                                                           |
+| =DWT=                 | Data Watchpoint and Trace                                                    |
+| =FPU=                 | Floating-point Unit, [[https://en.wikipedia.org/wiki/Floating-point_unit][wiki-link]]                                               |
+| =JTAG=                | Joint Test Action Group, [[https://en.wikipedia.org/wiki/JTAG][wiki-link]]                                           |
+| =MPU=                 | Memory Protection Unit, [[https://en.wikipedia.org/wiki/Memory_protection_unit][wiki-link]]                                            |
+| =MTB=                 | Micro Trace Buffer                                                           |
+| =NMI=                 | Non-Maskable Interrupt                                                       |
+| =NVIC=                | Nested Vectored Interrupt Controller                                         |
+| =PMU=                 | Power Management Unit                                                        |
+| =SEV=                 | Send-Event                                                                   |
+| =SWD=                 | Serial Wire Debug                                                            |
+| =SWO=                 | Serial Wire Output                                                           |
+| =WFE=                 | Wait for event                                                               |
+| =WFI=                 | Wait for interrupt                                                           |
+| =WIC=                 | Wake-up interrupt controller                                                 |
+|                     |                                                                              |
+| [ RP2040 ]          |                                                                              |
+| =I2C=                 | Inter-Integrated Circuit, [[https://en.wikipedia.org/wiki/I%C2%B2C][wiki-link]]                                          |
+| =SPI=                 | Serial Peripheral Interface, [[https://en.wikipedia.org/wiki/Serial_Peripheral_Interface][wiki-link]]                                       |
+| =QSPI=                | Queued Serial Peripheral Interface, is a type of SPI controller that         |
+|                     | uses a data queue to transfer data across an SPI bus.                        |
+| =QSPI=                | Quad SPI,  goes beyond dual SPI, adding two more I/O lines (SIO2 and         |
+|                     | SIO3) and sends 4 data bits per clock cycle.                                 |
+| =XIP=                 | Execute-in-place, the processor can execute the code from the external flash |
+|                     | witout copying the code to internal memory. [[https://en.wikipedia.org/wiki/Execute_in_place][wiki-link]]                        |
+| =ROSC=                | Ring Oscillator                                                              |
+| =XOSC=                | Crystal Oscillator                                                           |
+|                     |                                                                              |
