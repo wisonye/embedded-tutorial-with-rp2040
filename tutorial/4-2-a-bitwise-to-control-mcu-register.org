@@ -1,0 +1,233 @@
+* Bitwise operations to control =RP2040= register
+
+** 1. Where to get the =register= address
+
+The first thing before reading data from or writing data to the =RP2040= register, you need to know where to find those register addresses, as those addresses actually just are pointers to the location of the register memory.
+
+Here is the chapter structure convention of the =RP2040 Datasheet=:
+
+- Overview
+- ...
+- List of Registers
+
+For example, the chapter =2.14. Subsystem Resets=:
+
+#+BEGIN_SRC text
+  2.14. Subsystem Resets
+  2.14.1. Overview
+  2.14.2. Programmer’s Model
+  2.14.3. List of Registers
+#+END_SRC
+
+That =List of Registers= sub-chapter is the right place where you can get the given functional register address.
+
+Take an example of the =2.14.3. List of Registers=, it said:
+
+The reset controller registers start at a base address of ~0x4000c000~ (defined as RESETS_BASE in SDK).
+
+| Offset | Name       | Info             |
+|--------+------------+------------------|
+|    ~0x0~ | RESET      | Reset control.   |
+|    ~0x4~ | WDSEL      | Watchdog select. |
+|    ~0x8~ | RESET_DONE | Reset done.      |
+
+
+That means if you want to send bytes to the =RESET (Rest control) Register=, you need the following address value:
+
+#+BEGIN_SRC c
+  //
+  // Page 177 -> 2.14.3
+  //
+  // Reset Registers
+  //
+  #define RESET_BASE_ADDR			0x4000c000
+  #define RESET_CONTROL_ADDR		(RESET_BASE_ADDR + 0x00)
+  #define RESET_WATCH_DOG_SELCECT_ADDR	(RESET_BASE_ADDR + 0x04)
+  #define RESET_DONE_ADDR			(RESET_BASE_ADDR + 0x08)
+
+  // 0x4000c000 + x000
+  reg_u32 *reset_control_reg = (reg_u32*)RESET_CONTROL_ADDR;
+
+  // 0x4000c000 + 0x04
+  reg_u32 *reset_watch_dog_select_reg = (reg_u32*)RESET_WATCH_DOG_SELCECT_ADDR;
+
+  // 0x4000c000 + 0x08
+  reg_u32 *reset_done_reg = (reg_u32*)RESET_DONE_ADDR;
+#+END_SRC
+   
+
+** 2. How to read data from or write data to =register=
+
+*** Bitwise operations
+
+You need to know the basic bitwise operations, as that's the fundamental way to read data from or write data to the RP2040 register.
+
++ Use ~value |= (1<< x)~ to set bit x to ~1~ (AKA: set a bit)
++ Use ~value &= ~(1<< x)~ to set bit x to ~0~ (AKA: clear a bit)
++ Use ~value ^= (1<< x)~ to toggle bit x   (AKA: toggle/flip a bit)
+
+For example:
+
+
+#+BEGIN_SRC c
+  //
+  // Page 178:
+  //
+  // Reset control register: Set the bit5 to `0` to enable GPIO (iobank0) functionality
+  //
+  reg_u32 *reset_control_reg = (reg_u32*)RESET_CONTROL_ADDR;
+  *reset_control_reg &= ~(1 << 5);
+
+	//
+	// Page 46 -> 2.3.17, SIO: GPIO_OE Register
+	//
+	// SIO GPIO out enable register: Set the bit{LED_PIN} to 1 to enable GPIO_{LED_PIN} output mode
+	//
+	reg_u32 *gpio_out_enable_reg = (reg_u32*)SIO_GPIO_OUT_ENABLE_ADDR;
+	*gpio_out_enable_reg |= (1 << LED_PIN);
+#+END_SRC
+
+
+*** =SIO= and =Atomic Register Access=
+
+**** =SIO=
+
+=SIO= (Single-Cycle IO block) provides high-speed, deterministic access to GPIOs via each processor’s IOPORT. The =SIO= appears as memory-mapped hardware within the IOPORT space.
+
+If you don't use =SIO= to access GPIO peripheral, =Cortex-M0+= requires =two cycles= for a load or store, and may have to wait longer due to contention from other system bus masters. But with =SIO=, All GPIO peripheral reads and writes (and therefore all SIO accesses) take place in exactly =one cycle=!!!
+
+That's why you should read from or write to =SIO= registers to deal with GPIO peripherals.
+
+=SIO= registers are mapped to word-aligned addresses in the range =0xd0000000…0xd000017c=.
+
+
+**** =Atomic Register Access=
+
+=Atomic Register Access= helps you to avoid data race when accessing peripheral registers in RP2040 (multiple cores).
+
+Summaries, you should ALWAYS use atomic register methods to do the following operations to the given peripheral register except the =GPIO= (as it uses =SIO=, and =SIO= doesn't support atomic accesses)!!!
+
+- Set a bit (assign ~1~)  
+- Clear a bit (assign ~0~)
+- Flip a bit (xor ~~~) 
+
+Here are the rules about how to use =Atomic Register Access=:
+
+| Address Offset         | Purposes                      |
+|------------------------+-------------------------------|
+| Register Addr + 0x0000 | normal read write access      |
+| Register Addr + ~0x1000~ | atomic XOR on write           |
+| Register Addr + ~0x2000~ | atomic bitmask set on write   |
+| Register Addr + ~0x3000~ | atomic bitmask clear on write |
+
+
+For example, here are the subsystem reset register addresses:
+
+#+BEGIN_SRC c
+  //
+  // Page 177 -> 2.14.3
+  //
+  // Reset Registers
+  //
+  #define RESET_BASE_ADDR                 0x4000c000
+  #define RESET_CONTROL_ADDR              (RESET_BASE_ADDR + 0x00)
+  #define RESET_WATCH_DOG_SELCECT_ADDR    (RESET_BASE_ADDR + 0x04)
+  #define RESET_DONE_ADDR                 (RESET_BASE_ADDR + 0x08)
+#+END_SRC
+
+
+~RESET_CONTROL_ADDR~ is a read-write register to control which peripheral is enable or disable, and its rule look like this:
+
+- Write ~1~ to the particular bit to disable the given peripheral
+- Write ~0~ to the particular bit to enable  the given peripheral
+
+And here is the bit table:
+
+|  Bits | Name       | Reset (disable) |
+|-------+------------+-----------------|
+| 31:25 | Reserved   |                 |
+|    24 | USBCTRL    |             0x1 |
+|    23 | UART1      |             0x1 |
+|    22 | UART0      |             0x1 |
+|    21 | TIMER      |             0x1 |
+|    20 | TBMAN      |             0x1 |
+|    19 | SYSINFO    |             0x1 |
+|    18 | SYSCFG     |             0x1 |
+|    17 | SPI1       |             0x1 |
+|    16 | SPI0       |             0x1 |
+|    15 | RTC        |             0x1 |
+|    14 | PWM        |             0x1 |
+|    13 | PLL_USB    |             0x1 |
+|    12 | PLL_SYS    |             0x1 |
+|    11 | PIO1       |             0x1 |
+|    10 | PIO0       |             0x1 |
+|     9 | PADS_QSPI  |             0x1 |
+|     8 | PADS_BANK0 |             0x1 |
+|     7 | JTAG       |             0x1 |
+|     6 | IO_QSPI    |             0x1 |
+|     5 | IO_BANK0   |             0x1 |
+|     4 | I2C1       |             0x1 |
+|     3 | I2C0       |             0x1 |
+|     2 | DMA        |             0x1 |
+|     1 | BUSCTRL    |             0x1 |
+|     0 | ADC        |             0x1 |
+
+
+For example, if I want to:
+
+- Disable =ADC/I2C1,I2C0/UART1,UART0/PWM/SPI1,SPI0=
+- Enable =IO_BANK0 (GPIO)=
+
+So, what you need to do?
+
+***** Disable =ADC/I2C1,I2C0/UART1,UART0/PWM/SPI1,SPI0=
+
+#+BEGIN_SRC c
+  // Set all those bits to 1
+  u32 disable_bit_mask = (1 << 0) |               // ADC  bit0
+                         (1 << 3) | (1 << 4) |    // I2C  bit3,4
+                         (1 << 22) | (1 << 23) |  // UART bit22,34
+                         (1 << 14) |              // PWN  bit14
+                         (1 << 16) | (1 << 17);   // SPI  bit16,17
+
+  // 
+  // Get the `RESET_CONTROL_ADDR` and add atomic set bit offset `0x2000`,
+  // as you want to set `1` to disable!!!
+  //
+  reg_u32 *atomic_set_reg = (reg_u32 *)(RESET_CONTROL_ADDR | 0x2000);
+
+  //
+  // Then, set the `disable_bit_mask` value to that register
+  //
+  *atomic_set_reg = disable_bit_mask;
+#+END_SRC
+
+
+So, if you read back the ~RESET_CONTROL_ADDR~ register value, you should see like this
+
+#+BEGIN_SRC bash
+  # `1` means disabled, `0` means enabled
+  >>> Reset control register value after reset GPIO:
+  (D) [ Bits ] > PRINT_BITS "u32" - >>> 0xC34019 bits: 00000000110000110100000000011001
+#+END_SRC
+
+
+***** Enable =IO_BANK0 (GPIO)=
+
+#+BEGIN_SRC c
+  // Set all those bits to 0
+  u32 enabled_bit_mask = (1 << 5); // IO_BANK0 (GPIO)  bit5
+
+  // 
+  // Get the `RESET_CONTROL_ADDR` and add atomic clear bit offset `0x3000`,
+  // as you want to set `0` to enable!!!
+  //
+  reg_u32 *atomic_clear_reg = (reg_u32 *)(RESET_CONTROL_ADDR | 0x3000);
+
+  //
+  // Then, set the `disable_bit_mask` value to that register
+  //
+  ,*atomic_clear_reg = enabled_bit_mask;
+#+END_SRC
+
+So, if you read back the ~RESET_CONTROL_ADDR~ register value, you should see like this

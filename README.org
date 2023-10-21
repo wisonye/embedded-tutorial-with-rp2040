@@ -90,7 +90,7 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
    [[file:tutorial/4-1-a-how-does-your-program-tells-mcu-what-to-do.org][4.1 How does your program tell MCU what to do]]
 
-   4.2 Bitwise operations to control =RP2040= register
+   [[file:tutorial/4-2-a-bitwise-to-control-mcu-register.org][4.2 Bitwise operations to control =RP2040= register]]
 
    # Pure register without including SDK
    41K Oct 20 20:25 blinking-led.elf*
