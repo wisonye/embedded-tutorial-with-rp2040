@@ -11,13 +11,42 @@
 
 You have to run ~cmake~ in the root folder!!!
 
+*** Fixed =CMakeLists.txt= for your LSP
+
+Open root folder =CMakeLists.txt= and add the following settings before ~project(pico_examples C CXX ASM)~:
+
+#+BEGIN_SRC cmake
+#
+# Generate `compile_commands.json` for `Neovim` LSP needed
+#
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+#+END_SRC
+
+
+Then, add the following settings before ~# Hardware-specific examples in subdirectories:~
+
+#+BEGIN_SRC cmake
+#
+# Solve the "`<stdio.h>` file not found" issue
+#
+if (CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
+
+# Hardware-specific examples in subdirectories:
+#+END_SRC
+
+
+Those settings generate the correct ~build/compile_commands.jon~ for your LSP!!!
+
+
 *** Configure
 
 Plz replace the =~/pico/pico-sdk= to your correct path!!!
 
 #+BEGIN_SRC bash
   PICO_SDK_PATH=~/pico/pico-sdk \
-  cmake -DPICO_BOARD=pico_w -S ./ -B ./build
+  cmake -DPICO_BOARD=pico_w -DCMAKE_EXPORT_COMPILE_COMMANDS=true -S ./ -B ./build
 #+END_SRC
 
 If you install the =ARM GNUI Toolchain= via ARM official website (download zig file and unzip), then you need to use ~PICO_TOOLCHAIN_PATH~ env var to run the ~cmake~ command:
