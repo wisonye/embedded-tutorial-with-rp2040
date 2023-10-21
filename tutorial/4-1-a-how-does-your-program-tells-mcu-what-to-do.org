@@ -1,0 +1,22 @@
+* How does your program tell =MCU= what to do?
+
+Why we use =MCU=?
+
+The usual answer is: Want to control the external peripherals (some kind of sensors, robot arms, motors, etc).
+
+So, right now the question turns to how you can control the external peripherals? The answer is via the peripheral register inside the =MCU=.
+
+Then what is a =register=?
+
+A =register= is a special region of memory that controls a peripheral. A peripheral is a piece of electronics that sits right next to the processor within the microcontroller package and provides the processor with extra functionality. 
+
+There are couples of supported peripherals inside the =RP2040=:
+
+- GPIO
+- I2C
+- SPI
+- USART
+- Clock
+- ....etc
+
+That said, you send bytes (unsgined 32-bit integer) to the particular =register=, then =RP2040= knows what you want to do:)
