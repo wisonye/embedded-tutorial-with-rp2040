@@ -227,7 +227,7 @@ So, if you read back the ~RESET_CONTROL_ADDR~ register value, you should see lik
   //
   // Then, set the `disable_bit_mask` value to that register
   //
-  ,*atomic_clear_reg = enabled_bit_mask;
+  *atomic_clear_reg = enabled_bit_mask;
 #+END_SRC
 
 So, if you read back the ~RESET_CONTROL_ADDR~ register value, you should see like this
