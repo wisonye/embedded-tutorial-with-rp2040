@@ -46,7 +46,7 @@ Plz replace the =~/pico/pico-sdk= to your correct path!!!
 
 #+BEGIN_SRC bash
   PICO_SDK_PATH=~/pico/pico-sdk \
-  cmake -DPICO_BOARD=pico_w -DCMAKE_EXPORT_COMPILE_COMMANDS=true -S ./ -B ./build
+  cmake -DPICO_BOARD=pico_w -S ./ -B ./build
 #+END_SRC
 
 If you install the =ARM GNUI Toolchain= via ARM official website (download zig file and unzip), then you need to use ~PICO_TOOLCHAIN_PATH~ env var to run the ~cmake~ command:

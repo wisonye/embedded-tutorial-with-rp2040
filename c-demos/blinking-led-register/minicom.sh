@@ -10,7 +10,7 @@ if [ -z "$1" ]; then
     echo ">>> [ Example ]"
     echo ">>>"
     echo ">>> Linux: doas ./minicom.sh /dev/ttyACM0"
-    echo ">>> MacOS: ./minicom.sh /dev/tty.usbmodem145201"
+    echo ">>> MacOS: ./minicom.sh /dev/tty.usbmodem14701"
     echo ">>>"
 
     exit 0
