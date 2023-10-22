@@ -1,9 +1,9 @@
-#ifndef __RP2040_REG_H__
-#define __RP2040_REG_H__
+#ifndef __RP2040_REG_RESET_H__
+#define __RP2040_REG_RESET_H__
 
-#include <stdint.h>
+// #include <stdint.h>
 
-typedef uint32_t u32;
+typedef __UINT32_TYPE__ u32;
 
 //
 // RP2040 memory-mapped IO always use 32bit for reading and writing. That's why you will see
@@ -113,31 +113,31 @@ __attribute__((always_inline)) inline u32 reset_done_get_value() {
 // |     1 | BUSCTRL    |             0x1 |
 // |     0 | ADC        |             0x1 |
 
-#define RESET_CTL_USBCTRL_BIT       (1 << 24)
-#define RESET_CTL_UART1_BIT         (1 << 23)
-#define RESET_CTL_UART0_BIT         (1 << 22)
-#define RESET_CTL_TIMER_BIT         (1 << 21)
-#define RESET_CTL_TBMAN_BIT         (1 << 20)
-#define RESET_CTL_SYSINFO_BIT       (1 << 19)
-#define RESET_CTL_SYSCFG_BIT        (1 << 18)
-#define RESET_CTL_SPI1_BIT          (1 << 17)
-#define RESET_CTL_SPI0_BIT          (1 << 16)
-#define RESET_CTL_RTC_BIT           (1 << 15)
-#define RESET_CTL_PWM_BIT           (1 << 14)
-#define RESET_CTL_PLL_USB_BIT       (1 << 13)
-#define RESET_CTL_PLL_SYS_BIT       (1 << 12)
-#define RESET_CTL_PIO1_BIT          (1 << 11)
-#define RESET_CTL_PIO0_BIT          (1 << 10)
-#define RESET_CTL_PADS_QSPI_BIT     (1 << 9)
-#define RESET_CTL_PADS_BANK0_BIT    (1 << 8)
-#define RESET_CTL_JTAG_BIT          (1 << 7)
-#define RESET_CTL_IO_QSPI_BIT       (1 << 6)
-#define RESET_CTL_IO_BANK0_BIT      (1 << 5)
-#define RESET_CTL_I2C1_BIT          (1 << 4)
-#define RESET_CTL_I2C0_BIT          (1 << 3)
-#define RESET_CTL_DMA_BIT           (1 << 2)
-#define RESET_CTL_BUSCTRL_BIT       (1 << 1)
-#define RESET_CTL_ADC_BIT           (1 << 0)
+#define RESET_CTL_USBCTRL_BIT       ((u32)1 << 24)
+#define RESET_CTL_UART1_BIT         ((u32)1 << 23)
+#define RESET_CTL_UART0_BIT         ((u32)1 << 22)
+#define RESET_CTL_TIMER_BIT         ((u32)1 << 21)
+#define RESET_CTL_TBMAN_BIT         ((u32)1 << 20)
+#define RESET_CTL_SYSINFO_BIT       ((u32)1 << 19)
+#define RESET_CTL_SYSCFG_BIT        ((u32)1 << 18)
+#define RESET_CTL_SPI1_BIT          ((u32)1 << 17)
+#define RESET_CTL_SPI0_BIT          ((u32)1 << 16)
+#define RESET_CTL_RTC_BIT           ((u32)1 << 15)
+#define RESET_CTL_PWM_BIT           ((u32)1 << 14)
+#define RESET_CTL_PLL_USB_BIT       ((u32)1 << 13)
+#define RESET_CTL_PLL_SYS_BIT       ((u32)1 << 12)
+#define RESET_CTL_PIO1_BIT          ((u32)1 << 11)
+#define RESET_CTL_PIO0_BIT          ((u32)1 << 10)
+#define RESET_CTL_PADS_QSPI_BIT     ((u32)1 << 9)
+#define RESET_CTL_PADS_BANK0_BIT    ((u32)1 << 8)
+#define RESET_CTL_JTAG_BIT          ((u32)1 << 7)
+#define RESET_CTL_IO_QSPI_BIT       ((u32)1 << 6)
+#define RESET_CTL_IO_BANK0_BIT      ((u32)1 << 5)
+#define RESET_CTL_I2C1_BIT          ((u32)1 << 4)
+#define RESET_CTL_I2C0_BIT          ((u32)1 << 3)
+#define RESET_CTL_DMA_BIT           ((u32)1 << 2)
+#define RESET_CTL_BUSCTRL_BIT       ((u32)1 << 1)
+#define RESET_CTL_ADC_BIT           ((u32)1 << 0)
 
 ///
 /// Use atomic set bit operation to set the give bit combination to disable the particular

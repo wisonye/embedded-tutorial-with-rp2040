@@ -1,9 +1,8 @@
 #include <stdio.h>
 
 #include "bits.h"
-#include "log.h"
 #include "pico/stdlib.h"
-#include "rp2040_reg.h"
+#include "register/reset.h"
 
 #define LED_PIN 2
 
@@ -84,6 +83,12 @@ void enable_gpio_and_wait_for_it_stable(void) {
         RESET_CTL_PIO0_BIT | RESET_CTL_TBMAN_BIT);
 
     // Enable peripherals
+	//
+	// For the `GPIO` peripheral, you HAVE TO enable these 2 bits:
+	//
+	// - RESET_CTL_PADS_BANK0_BIT: bit 8 (PADS_BANK0)
+	// - RESET_CTL_IO_BANK0_BIT: bit 5 (IO_BANK0)
+	//
     reset_control_enable_peripherals(
         RESET_CTL_IO_QSPI_BIT | RESET_CTL_TIMER_BIT | RESET_CTL_USBCTRL_BIT |
         RESET_CTL_SYSINFO_BIT | RESET_CTL_SYSCFG_BIT | RESET_CTL_RTC_BIT |
@@ -107,7 +112,7 @@ void enable_gpio_and_wait_for_it_stable(void) {
 
     printf("\n>>> Rest done register value:");
     PRINT_BITS(*reset_done_reg);
-    while (!(*reset_done_reg & (1 << 5))) {
+    while (!(*reset_done_reg & ((u32)1 << 5))) {
         //
     }
     printf("\n\n>>> Rest is done.");
@@ -146,7 +151,7 @@ void enable_gpio_and_wait_for_it_stable(void) {
     // GPIO_{LED_PIN} output mode
     //
     reg_u32 *gpio_out_enable_reg = (reg_u32 *)SIO_GPIO_OUT_ENABLE_ADDR;
-    *gpio_out_enable_reg |= (1 << LED_PIN);
+    *gpio_out_enable_reg |= ((u32)1 << LED_PIN);
 }
 
 //
@@ -163,7 +168,7 @@ void blinking_led_loop(void) {
         // SIO GPIO out set register: set bit{LED_PIN} to 1 for setting
         // GPIO_{LED_PIN} to high
         //
-        *gpio_out_set_reg |= (1 << LED_PIN);
+        *gpio_out_set_reg |= ((u32)1 << LED_PIN);
         simulate_delay();
 
         //
@@ -172,7 +177,7 @@ void blinking_led_loop(void) {
         // SIO GPIO clear set register: set bit{LED_PIN} to 1 for setting
         // GPIO_{LED_PIN} to low
         //
-        *gpio_out_clear_reg |= (1 << LED_PIN);
+        *gpio_out_clear_reg |= ((u32)1 << LED_PIN);
         simulate_delay();
     }
 }

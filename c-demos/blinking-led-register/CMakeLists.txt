@@ -22,8 +22,7 @@ project(blinking-led-register)
 pico_sdk_init()
 
 add_executable(${PROJECT_NAME}
-src/log.c
-src/rp2040_reg.c
+src/register/reset.c
 src/blinking-led.c
 )
 

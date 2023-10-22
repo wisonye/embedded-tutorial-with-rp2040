@@ -46,13 +46,14 @@
 #define _FILL_BITS(_BUFFER, TYPE, VALUE, LOG_PREFIX)                       \
     size_t total_bits = (sizeof(TYPE) * 8);                                \
     TYPE temp_value = VALUE;                                               \
-    for (size_t bit = 0; bit < total_bits; bit++) {                           \
+    for (size_t bit = 0; bit < total_bits; bit++) {                        \
         _BUFFER[total_bits - bit - 1] = temp_value & 0x01 ? '1' : '0';     \
         temp_value = temp_value >> 1;                                      \
     }                                                                      \
     _BUFFER[total_bits] = '\0';                                            \
-    DEBUG_LOG(Bits, PRINT_BITS #LOG_PREFIX, ">>> 0x%02lX bits: %s", VALUE, \
-              _BUFFER);
+    printf("\n>>> [ Bits - PRINT_BITS \"" #LOG_PREFIX "\" ] - 0x%02lX bits: %s", VALUE, _BUFFER);
+
+
 
 //
 // Get back data type name as static `char *`
