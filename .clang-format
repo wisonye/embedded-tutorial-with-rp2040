@@ -20,7 +20,7 @@
 #
 # `GNU` A style complying with the GNU coding standards
 BasedOnStyle: Google
-ColumnLimit: 100
+ColumnLimit: 90
 IndentWidth: 4
 PPIndentWidth: 4
 IndentPPDirectives: BeforeHash

@@ -1,11 +1,9 @@
-#include <stdint.h>
-// #include <stdio.h>
-// #include "log.h"
-// #include "bits.h"
-// 
-// #include "pico/stdlib.h"
+#include <stdio.h>
 
-typedef uint32_t u32;
+#include "bits.h"
+#include "log.h"
+#include "pico/stdlib.h"
+#include "rp2040_reg.h"
 
 #define LED_PIN 2
 
@@ -17,30 +15,6 @@ typedef uint32_t u32;
 #define HALF_SECOND_DELAY (u32)(CLK_SPEED / 2)
 #define ONE_QUARTER_SECOND_DELAY (u32)(CLK_SPEED / 4)
 #define ONE_EIGHTH_SECOND_DELAY (u32)(CLK_SPEED / 8)
-
-//
-// ./src/rp2_common/hardware_base/include/hardware/address_mapped.h
-//
-// typedef volatile uint32_t reg_u32;
-typedef volatile u32 reg_u32;
-
-// //
-// // Atomic Register Access
-// //
-// #define ATOMIC_NORMAL_READ_WRITE_OFFSET 0x0000
-// #define ATOMIC_XOR_ON_WRITE_OFFSET		0x1000
-// #define ATOMIC_SET_ON_WRITE_OFFSET		0x2000
-// #define ATOMIC_CLEAR_ON_WRITE_OFFSET	0x3000
-
-//
-// Page 177 -> 2.14.3
-//
-// Reset Registers
-//
-#define RESET_BASE_ADDR 0x4000c000
-#define RESET_CONTROL_ADDR (RESET_BASE_ADDR + 0x00)
-#define RESET_WATCH_DOG_SELCECT_ADDR (RESET_BASE_ADDR + 0x04)
-#define RESET_DONE_ADDR (RESET_BASE_ADDR + 0x08)
 
 //
 // Page 243 -> 2.19.6.1 IO - User Bank
@@ -75,6 +49,11 @@ void simulate_delay(void) {
 ///
 ///
 void enable_gpio_and_wait_for_it_stable(void) {
+    printf("\n>>> Reset control register value:");
+    PRINT_BITS(reset_control_get_value());
+
+    printf("\n>>> Reset done register value:");
+    PRINT_BITS(reset_done_get_value());
     //
     // Page 178:
     //
@@ -83,35 +62,38 @@ void enable_gpio_and_wait_for_it_stable(void) {
     //
     // If your project links to `pico_stdlib` (in `CMakeLists.txt`), then somehow SDK
     // enables all functionalities by default. This can be confirmed by the following
-	// steps:
-	//
-	// - If you print `*reset_control_reg` register value, it will be 0x00
-	//
-	// - If you read the `Reset done resgiter` value, it should be:
-	//   `0000 0001 1111 1111 1111 1111 1111 1111` (bit0~bit24)
+    // steps:
+    //
+    // - If you print `*reset_control_reg` register value, it will be
+    //   0x00 bits: 00000000000000000000000000000000
+    //
+    // - If you read the `Reset done resgiter` value, it should be:
+    //   0x1FFFFFF bits: 00000001111111111111111111111111
+    //
     //   It means all peripherals are ready to be used!!!
     //
-    // To avoid that happens, set the `Reset control register` value to the following:
+    // To avoid that happens, you should disable all unnecessary peripherals and only
+    // enable the one you needed:)
     //
-    // bit24 ~ bit0: 0000 0001 1111 1111 1111 1111 1101 1111 -> 0x01 FF FF DF
-	// bit23 ~ bit0: 0000 0000 1100 0011 0000 1100 0101 1001 -> 0x00 C3 0C 59
-    //
-    // Only bit5 is 0 to enable GPIO and disable all the other peripherals.
-    //
-    reg_u32 *reset_control_reg = (reg_u32 *)RESET_CONTROL_ADDR;
 
-    // printf("\n>>> Reset control register value:");
-    // PRINT_BITS(*reset_control_reg);
+    // Disable peripherals
+    reset_control_disable_peripherals(
+        RESET_CTL_ADC_BIT | RESET_CTL_I2C1_BIT | RESET_CTL_I2C0_BIT | RESET_CTL_PWM_BIT |
+        RESET_CTL_SPI1_BIT | RESET_CTL_SPI0_BIT | RESET_CTL_UART1_BIT |
+        RESET_CTL_UART0_BIT | RESET_CTL_DMA_BIT | RESET_CTL_PIO1_BIT |
+        RESET_CTL_PIO0_BIT | RESET_CTL_TBMAN_BIT);
 
-	//
-	// DO NOT DO THIS!!!
-	// As I don't konw why this will halt the MCU if try to set the value to I wanted???
-	//
-    // *reset_control_reg = 0x01FFFFDF;
-    // *reset_control_reg = 0x00C30C59;
+    // Enable peripherals
+    reset_control_enable_peripherals(
+        RESET_CTL_IO_QSPI_BIT | RESET_CTL_TIMER_BIT | RESET_CTL_USBCTRL_BIT |
+        RESET_CTL_SYSINFO_BIT | RESET_CTL_SYSCFG_BIT | RESET_CTL_RTC_BIT |
+        RESET_CTL_PLL_USB_BIT | RESET_CTL_PLL_SYS_BIT | RESET_CTL_PADS_QSPI_BIT |
+        RESET_CTL_PADS_BANK0_BIT | RESET_CTL_JTAG_BIT | RESET_CTL_IO_BANK0_BIT |
+        RESET_CTL_BUSCTRL_BIT);
 
-    // printf("\n>>> Reset control register value after reset GPIO:");
-    // PRINT_BITS(*reset_control_reg);
+    printf(
+        "\n\n>>> Reset control register value after only enable necessary peripherals:");
+    PRINT_BITS(reset_control_get_value());
 
     //
     // Reset done register:
@@ -120,15 +102,20 @@ void enable_gpio_and_wait_for_it_stable(void) {
     // register will become `1`
     //
 
-    // printf("\n>>> Waiting for GPIO reset done......");
+    printf("\n\n>>> Waiting for reset to be done......");
     reg_u32 *reset_done_reg = (reg_u32 *)RESET_DONE_ADDR;
 
-    // printf("\n>>> Rest done register value:");
-    // PRINT_BITS(*reset_done_reg);
+    printf("\n>>> Rest done register value:");
+    PRINT_BITS(*reset_done_reg);
     while (!(*reset_done_reg & (1 << 5))) {
         //
     }
-    // printf("\n>>> GPIO rest is done.");
+    printf("\n\n>>> Rest is done.");
+
+    printf("\n>>> Reset control register value after GPIO reset is done:");
+    PRINT_BITS(reset_control_get_value());
+    printf("\n\n>>> Reset done register value after GPIO reset is done:");
+    PRINT_BITS(reset_done_get_value());
 
     //
     // GPIO_X (pin) control register:
@@ -194,8 +181,8 @@ void blinking_led_loop(void) {
 //
 //
 int main(void) {
-    // stdio_init_all();
-    // printf("\n>>> [ blinking-led-register ]\n");
+    stdio_init_all();
+    printf("\n>>> [ blinking-led-register ]\n");
 
     enable_gpio_and_wait_for_it_stable();
     blinking_led_loop();
