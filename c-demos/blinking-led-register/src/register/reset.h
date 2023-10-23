@@ -75,14 +75,14 @@ __attribute__((always_inline)) inline u32 reset_done_get_value() {
 // ---------------------------------------------------------------------------------------
 
 //
-// `RESET_CONTROL_ADDR` is a read-write register to control which peripheral is enable or
-// disable, and its rule look like this:
+// `Reset Control Register` is a read-write register to control which peripheral is enabled
+// or disabled, and the rule looks like this:
 // 
-// - Write ~1~ to the particular bit to disable the given peripheral
-// - Write ~0~ to the particular bit to enable  the given peripheral
+// - Write a `1` to the particular bit to disable the given peripheral
+// - Write a `0` to the particular bit to enable  the given peripheral
 // 
-// And here is the bit table:
-// Reset Control Register bit table:
+// And here is the Reset Control Register bit table, `0x1` means that bit is disabled by
+// default.
 //
 // |  Bits | Name       | Reset (disable) |
 // |-------+------------+-----------------|
@@ -139,6 +139,26 @@ __attribute__((always_inline)) inline u32 reset_done_get_value() {
 #define RESET_CTL_BUSCTRL_BIT       ((u32)1 << 1)
 #define RESET_CTL_ADC_BIT           ((u32)1 << 0)
 
+// Pay attention when using SDK and link to `pico_stdlib` (in `CMakeLists.txt`). In that
+// case, somehow SDK enables all functionalities by default. This can be confirmed by the
+// following steps:
+//
+// - If you print `Reset Control Register` value, it will be
+//   0x00	    bits: 00000000000000000000000000000000
+//   Which should be (by default):
+//   0x01FFFFFF bits: 00000001111111111111111111111111
+//
+// - If you read the `Reset Done Resgiter` value, it will be:
+//   0x01FFFFFF bits: 00000001111111111111111111111111
+//   Which should be (by default):
+//   0x00       bits: 00000000000000000000000000000000
+//
+//   It means all peripherals are ready to be used!!!
+//
+// To reduce the power consumption, you should disable all unnecessary peripherals and only
+// enable the one you needed:)
+//
+
 ///
 /// Use atomic set bit operation to set the give bit combination to disable the particular
 /// peripherals.
@@ -183,7 +203,10 @@ void reset_control_disable_peripherals(u32 disable_peripheral_bits);
 void reset_control_enable_peripherals(u32 enable_peripheral_bits);
 
 ///
+/// After reset option has been done, then the related bits in this register will become `1`,
+/// this function will wait until all those bits are `1`.
 ///
+/// Pay attention: The bit31~bit25 is reserved (should be always 0)!!!
 ///
 void reset_done_wait_for_enabled_peripherals_ready(u32 enabled_peripheral_bits);
 #endif

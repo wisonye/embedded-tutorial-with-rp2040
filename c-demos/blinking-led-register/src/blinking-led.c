@@ -63,16 +63,20 @@ void enable_gpio_and_wait_for_it_stable(void) {
     // enables all functionalities by default. This can be confirmed by the following
     // steps:
     //
-    // - If you print `*reset_control_reg` register value, it will be
-    //   0x00 bits: 00000000000000000000000000000000
+    // - If you print `Reset Control Register` value, it will be
+    //   0x00	    bits: 00000000000000000000000000000000
+    //   Which should be (by default):
+    //   0x01FFFFFF bits: 00000001111111111111111111111111
     //
-    // - If you read the `Reset done resgiter` value, it should be:
-    //   0x1FFFFFF bits: 00000001111111111111111111111111
+    // - If you read the `Reset Done Resgiter` value, it will be:
+    //   0x01FFFFFF bits: 00000001111111111111111111111111
+    //   Which should be (by default):
+    //   0x00       bits: 00000000000000000000000000000000
     //
     //   It means all peripherals are ready to be used!!!
     //
-    // To avoid that happens, you should disable all unnecessary peripherals and only
-    // enable the one you needed:)
+    // To reduce the power consumption, you should disable all unnecessary peripherals and
+    // only enable the one you needed:)
     //
 
     // Disable peripherals
@@ -83,18 +87,19 @@ void enable_gpio_and_wait_for_it_stable(void) {
         RESET_CTL_PIO0_BIT | RESET_CTL_TBMAN_BIT);
 
     // Enable peripherals
-	//
-	// For the `GPIO` peripheral, you HAVE TO enable these 2 bits:
-	//
-	// - RESET_CTL_PADS_BANK0_BIT: bit 8 (PADS_BANK0)
-	// - RESET_CTL_IO_BANK0_BIT: bit 5 (IO_BANK0)
-	//
-    reset_control_enable_peripherals(
+    //
+    // For the `GPIO` peripheral, you HAVE TO enable these 2 bits:
+    //
+    // - RESET_CTL_PADS_BANK0_BIT: bit 8 (PADS_BANK0)
+    // - RESET_CTL_IO_BANK0_BIT: bit 5 (IO_BANK0)
+    //
+    u32 enabled_peripheral_bits =
         RESET_CTL_IO_QSPI_BIT | RESET_CTL_TIMER_BIT | RESET_CTL_USBCTRL_BIT |
         RESET_CTL_SYSINFO_BIT | RESET_CTL_SYSCFG_BIT | RESET_CTL_RTC_BIT |
         RESET_CTL_PLL_USB_BIT | RESET_CTL_PLL_SYS_BIT | RESET_CTL_PADS_QSPI_BIT |
         RESET_CTL_PADS_BANK0_BIT | RESET_CTL_JTAG_BIT | RESET_CTL_IO_BANK0_BIT |
-        RESET_CTL_BUSCTRL_BIT);
+        RESET_CTL_BUSCTRL_BIT;
+    reset_control_enable_peripherals(enabled_peripheral_bits);
 
     printf(
         "\n\n>>> Reset control register value after only enable necessary peripherals:");
@@ -103,17 +108,15 @@ void enable_gpio_and_wait_for_it_stable(void) {
     //
     // Reset done register:
     //
-    // When resetting GPIO functionality has been done, then the bit5 in this
-    // register will become `1`
+    // After reset option has been done, then the related bits in this register will
+    // become `1`
     //
+    printf("\n>>> Rest done register value:");
+    PRINT_BITS(reset_done_get_value());
 
     printf("\n\n>>> Waiting for reset to be done......");
     reg_u32 *reset_done_reg = (reg_u32 *)RESET_DONE_ADDR;
-
-    printf("\n>>> Rest done register value:");
-    PRINT_BITS(*reset_done_reg);
     while (!(*reset_done_reg & ((u32)1 << 5))) {
-        //
     }
     printf("\n\n>>> Rest is done.");
 
