@@ -1,0 +1,85 @@
+* Why SDK enables all peripherals by default
+
+** How to provde that SDK enables all peripherals by default?
+
+You're able to read the =Reset Control Register= value and the =Reset Done Register= to confirm that:
+
+- If you read =Reset Control Register= value
+
+  You should see the value is ~0x00~
+  bits: 00000000000000000000000000000000
+
+  Which should be ~0x01FFFFFF~ (by default)
+  bits: 00000001111111111111111111111111
+
+- If you read the =Reset Done Resgiter= value
+
+  You should see the value is ~0x01FFFFFF~
+  bits: 00000001111111111111111111111111
+
+  Which should be ~0x00~ (by default):
+  bits: 00000000000000000000000000000000
+
+It proves all peripherals are ready to be used when your ~main~ function is running!!!
+
+That's why, you should disable all unnecessary peripherals and only enable the ones you need manually to reduce power consumption.
+
+
+** How SDK enable all peripherals before ~main~ function?
+
+When compiling your program, the compiled obj file will be linked to ={PICO_SDK_PATH}/src/rp2_common/pico_standard_link/crt0.S= at the link stage.
+
+Inside the ={PICO_SDK_PATH}/src/rp2_common/pico_standard_link/crt0.S=, you can see the following content:
+
+#+BEGIN_SRC c
+  // Reset handler:
+  // - initialises .data
+  // - clears .bss
+  // - calls runtime_init
+  // - calls main
+  // - calls exit (which should eventually hang the processor via _exit)
+#+END_SRC
+
+That ~runtime_init~ is the secret you're looking for, it's inside ={PICO_SDK_PATH}./src/rp2_common/pico_runtime/runtime.c=:
+
+#+BEGIN_SRC c
+  void runtime_init(void) {
+    // Reset all peripherals to put system into a known state,
+    // - except for QSPI pads and the XIP IO bank, as this is fatal if running from flash
+    // - and the PLLs, as this is fatal if clock muxing has not been reset on this boot
+    // - and USB, syscfg, as this disturbs USB-to-SWD on core 1
+    reset_block(~(
+            RESETS_RESET_IO_QSPI_BITS |
+            RESETS_RESET_PADS_QSPI_BITS |
+            RESETS_RESET_PLL_USB_BITS |
+            RESETS_RESET_USBCTRL_BITS |
+            RESETS_RESET_SYSCFG_BITS |
+            RESETS_RESET_PLL_SYS_BITS
+    ));
+
+    // Remove reset from peripherals which are clocked only by clk_sys and
+    // clk_ref. Other peripherals stay in reset until we've configured clocks.
+    unreset_block_wait(RESETS_RESET_BITS & ~(
+            RESETS_RESET_ADC_BITS |
+            RESETS_RESET_RTC_BITS |
+            RESETS_RESET_SPI0_BITS |
+            RESETS_RESET_SPI1_BITS |
+            RESETS_RESET_UART0_BITS |
+            RESETS_RESET_UART1_BITS |
+            RESETS_RESET_USBCTRL_BITS
+    ));
+
+    // .... Ingore the middle part
+
+    // After calling preinit we have enough runtime to do the exciting maths
+    // in clocks_init
+    clocks_init();
+
+    // Peripheral clocks should now all be running
+    unreset_block_wait(RESETS_RESET_BITS);
+
+    // .... Ingore the rest part
+  }
+#+END_SRC
+
+As you can see, that's very clear how it works:)
