@@ -1,0 +1,35 @@
+* Solve the losing ~printf~ content after ~stdio_init_all();~ call
+
+For example, you have the following code:
+
+#+BEGIN_SRC c
+  int main(void) {
+      stdio_init_all();
+      printf("[ WIFI Demo ]\n");          // This content lost in `minicom`
+      while (true) {
+          printf(">>> Wifi demo :)\n");   // This always be there
+          sleep_ms(1000);
+      }
+      return 0;
+  }
+#+END_SRC
+
+The way to solve that is by adding the following settings in ~CMakeLists.txt~:
+
+#+BEGIN_SRC cmake
+ #
+ # Solved the `printf` content lost after `stdio_init_all();`
+ #
+ target_compile_definitions(YOUR_TARGET_NAME_HERE PRIVATE PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1)
+#+END_SRC
+
+That ~PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS~ means:
+
+_Maximum number of milliseconds to wait during initialization for a CDC connection_ _from the host (negative means indefinite) during initialization._
+
+Now, you can see that in =minicom=:
+
+#+html: <p align="center"><img src="tutorial/tutorial-images/fix-losing-printf.png" /></p>
+#+ATTR_HTML: :width 50%
+[[file:tutorial-images/fix-losing-printf.png]]
+

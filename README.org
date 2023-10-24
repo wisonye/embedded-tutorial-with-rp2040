@@ -98,4 +98,7 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
    5.1 [[file:tutorial/5-1-a-why-sdk-enable-all-peripherals-by-default.org][Why SDK enables all peripherals by default]]
 
-   5.1 How ~printf~ is able to print to USB and UART
+   5.2 [[file:tutorial/5-2-a-how-printf-print-to-usb-and-uart.org][How the ~printf~ actually print to USB and UART]]
+
+   5.3 [[file:tutorial/5-3-a-solve-losing-printf-content.org][Solve the losing ~printf~ content after ~stdio_init_all();~ call]]
+   

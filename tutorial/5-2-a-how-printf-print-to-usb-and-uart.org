@@ -1,0 +1,128 @@
+* How the ~printf~ actually print to USB and UART
+
+In the page 23 of =Pico W C/C++ SDK= (=2.7.1. Standard Input/Output (stdio) Support)=, it explains very clear that:
+
+The SDK runtime packages a lightweight ~printf~ library by Marco Paland, linked as ~pico_printf~
+
+You're able to use ~printf~, ~puts~, ~getchar~, found in the standard ~<stdio.h>~ header. But the linker will link your function call to the ~pico_~ implementation, not the =ARM version stdio= you imagined. Also, ~stdout~ is broadcast to all interfaces that are enabled, and ~stdin~ is collected from all interfaces which are enabled and support input.
+
+That's the last linker step will use the following linker options to create the ~.elf~ binary:
+
+#+BEGIN_SRC bash
+  arm-none-eabi-g++ -mcpu=cortex-m0plus -mthumb -O3 -DNDEBUG -Wl,--build-id=none 
+
+  # ...ignore another non-related option
+
+  #
+  # Use a wrapper function for the symbol.
+  #
+  # {PICO_SDK_PATH}/src/rp2_common/pico_printf/printf.c
+  #
+  -Wl,--wrap=sprintf
+  -Wl,--wrap=snprintf
+  -Wl,--wrap=vsnprintf
+
+  #
+  # Use a wrapper function for the symbol.
+  #
+  # {PICO_SDK_PATH}/rp2_common/pico_stdio/stdio.c
+  #
+  -Wl,--wrap=printf
+  -Wl,--wrap=vprintf
+
+  # Link the pi print implementation obj file
+  CMakeFiles/blinking-led.dir/{PICO_SDK_PATH}/src/rp2_common/pico_printf/printf.c.obj
+
+  # ...ignore another non-related option
+
+#+END_SRC
+
+
+- Wrapper function defined in ={PICO_SDK_PATH}/src/rp2_common/pico_printf/printf.c=
+
+  #+BEGIN_SRC c
+    ///////////////////////////////////////////////////////////////////////////////
+
+    int WRAPPER_FUNC(sprintf)(char *buffer, const char *format, ...) {
+        va_list va;
+        va_start(va, format);
+        const int ret = _vsnprintf(_out_buffer, buffer, (size_t) -1, format, va);
+        va_end(va);
+        return ret;
+    }
+
+    int WRAPPER_FUNC(snprintf)(char *buffer, size_t count, const char *format, ...) {
+        va_list va;
+        va_start(va, format);
+        const int ret = _vsnprintf(_out_buffer, buffer, count, format, va);
+        va_end(va);
+        return ret;
+    }
+
+    int WRAPPER_FUNC(vsnprintf)(char *buffer, size_t count, const char *format, va_list va) {
+        return _vsnprintf(_out_buffer, buffer, count, format, va);
+    }
+  #+END_SRC
+
+
+- Wrapper function defined in ={PICO_SDK_PATH}/rp2_common/pico_stdio/stdio.c=
+
+  #+BEGIN_SRC c
+    int WRAPPER_FUNC(vprintf)(const char *format, va_list va) {
+       // ...ignore long content here
+    }
+
+    int __printflike(1, 0) WRAPPER_FUNC(printf)(const char* format, ...)
+    {
+        va_list va;
+        va_start(va, format);
+        int ret = vprintf(format, va);
+        va_end(va);
+        return ret;
+    }
+  #+END_SRC
+
+
+So summaries, that said if you have a ~printf("hello:)")~, then it will broadcast the ~hello:)~ to different places, depending on how you configure the following macros in ~CMakeLists.txt~:
+
+
+** 1. Serail port via USB if you enabled the following setting in ~CMakeLists.txt~:
+
+#+BEGIN_SRC cmake
+ pico_enable_stdio_usb(YOUR_TARGET_NAME_HERE 1)
+#+END_SRC
+
+That's why you can see the ~printf~ via =minicom=.
+
+
+** 2. UART pins (=GPIO0= (TX) and =GPIO1= (RX)) if you enabled the following setting in ~CMakeLists.txt~:
+
+#+BEGIN_SRC cmake
+ pico_enable_stdio_uart(YOUR_TARGET_NAME_HERE 1)
+#+END_SRC
+
+If you use non-default pins, specify by the following settings:
+
+#+BEGIN_SRC cmake
+target_compile_definitions(hello_world PRIVATE
+  PICO_DEFAULT_UART_TX_PIN=YOUR_PIN_NO_HERE
+  PICO_DEFAULT_UART_RX_PIN=YOUR_PIN_NO_HERE
+)
+#+END_SRC
+
+
+** 3. Both serial port via USB and UART if you enabled the following setting in ~CMakeLists.txt~:
+
+#+BEGIN_SRC cmake
+ pico_enable_stdio_usb(YOUR_TARGET_NAME_HERE 1)
+ pico_enable_stdio_uart(YOUR_TARGET_NAME_HERE 1)
+#+END_SRC
+
+
+** 4. Also, only ~pico_enable_stdio_uart~ is enabled by default, you can disable it by settings to ~0~:
+
+#+BEGIN_SRC cmake
+ pico_enable_stdio_uart(YOUR_TARGET_NAME_HERE 0)
+#+END_SRC
+
+
