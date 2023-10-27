@@ -1,4 +1,4 @@
-* Zig Blink onboard LED Demo
+* Zig Blink Register Demo
 
 ** How to configure
 
@@ -14,10 +14,10 @@
 2. Change your zig obj file name to match your cmake project name
 
   #+BEGIN_SRC zig
-    const output_obj_filename = "zig-blink.o";
+    const output_obj_filename = "zig-blink-register.o";
   #+END_SRC 
 
-  It's defined in ~build.zig~, plz make sure the filename (without the ~.o~) is the same value as the cmake project name in the ~CMakeLists.txt~ (e.g. ~project(zig-blink)~)!!!
+  It's defined in ~build.zig~, plz make sure the filename (without the ~.o~) is the same value as the cmake project name in the ~CMakeLists.txt~ (e.g. ~project(zig-blink-register)~)!!!
 
   Make sure to change both of them to the same value!!!
 
@@ -56,12 +56,16 @@ Run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the usage
 
 #+BEGIN_SRC bash
   # For linux
-  doas ./flash_linux.sh zig-blink
+  doas ./flash_linux.sh zig-blink-register
 
   # For macos
-  ./flash_macos.sh zig-blink
+  ./flash_macos.sh zig-blink-register
 #+END_SRC
 
+
+Pay attention:
+
+This project is configured to wait for the serial device to be connected, that's why you have to run ~minicom.sh~ before seeing the blinking LED on the =GPIO_0= pin!!!
 
 
 ** How to view ~printf~ debug output
@@ -77,5 +81,5 @@ Run ~./minicom.sh~ script, it will print out the usage and example if you don't 
 
   Press CTRL-A Z for help on special keys
 
-  >>> [ Zig blinking onboard LED ]
+  >>> [ Zig blinking LED ]
 #+END_SRC
