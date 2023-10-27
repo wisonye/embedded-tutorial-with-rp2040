@@ -1,0 +1,80 @@
+* Blinking LED via =GPIO_0= pin
+
+** How to configure
+
+1. You need to provide the =PICO_SDK_PATH= env var and set to your =pico-sdk= git clone folder!!!
+
+    For example:
+
+    #+BEGIN_SRC bash
+    PICO_SDK_PATH=~/pico/pico-sdk \
+    ./configure.sh
+    #+END_SRC
+
+2. Optional, you need provide the =PICO_TOOLCHAIN_PATH= env var if ~arm-none-eabi-gcc~ doesn't in ypur ~$PATH~.
+
+    For example:
+
+    #+BEGIN_SRC bash
+    PICO_SDK_PATH=~/pico/pico-sdk \
+    PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+    ./configure.sh
+    #+END_SRC
+
+
+** How to build and flash pico
+
+Build the entire project:
+
+   #+BEGIN_SRC bash
+     ./build.sh
+   #+END_SRC
+
+
+Then run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  # For linux
+  doas ./flash_linux.sh blinking-led-register
+
+  # For macos
+  ./flash_macos.sh blinking-led-register
+#+END_SRC
+
+
+** How to view ~printf~ debug output
+
+Run ~./minicom.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  Welcome to minicom 2.8
+
+  OPTIONS:
+  Compiled on Jan  4 2021, 00:04:46.
+  Port /dev/tty.usbmodem145201, 10:28:40
+
+  Press Meta-Z for help on special keys
+
+  >>> [ blinking-led-register ]
+  
+  >>> Reset control register value:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0x00 bits: 00000000000000000000000000000000
+  >>> Reset done register value:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0x1FFFFFF bits: 00000001111111111111111111111111
+  
+  >>> Reset control register value after only enable necessary peripherals:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0xD34C1D bits: 00000000110100110100110000011101
+  >>> Rest done register value:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0x13CB3E2 bits: 00000001001111001011001111100010
+  
+  >>> Waiting for reset to be done......
+  
+  >>> Rest is done.
+  >>> Reset control register value after GPIO reset is done:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0xD34C1D bits: 00000000110100110100110000011101
+  
+  >>> Reset done register value after GPIO reset is done:
+  >>> [ Bits - PRINT_BITS "u32" ] - 0x13CB3E2 bits: 00000001001111001011001111100010
+#+END_SRC
+
+BTW, the ~Meta-Z~ doesn't work on =MacOS + Alacritty= at this moment. So, =kill minicom= is my way to exit the =minicom= program.

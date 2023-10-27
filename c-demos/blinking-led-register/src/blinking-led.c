@@ -4,7 +4,7 @@
 #include "pico/stdlib.h"
 #include "register/reset.h"
 
-#define LED_PIN 2
+#define LED_PIN 0
 
 //
 // Purpose that base metal boot in 48MHz (48,000,000 tick in one second) without
@@ -140,12 +140,12 @@ void enable_gpio_and_wait_for_it_stable(void) {
     //
 
     // For example: select SIO function for the GPIO_0
-    // reg_u32 *gpio_0_control_reg = (reg_u32*)GPIO_0_CONTROL_ADDR;
-    // *gpio_0_control_reg = 0x05;
+    reg_u32 *gpio_0_control_reg = (reg_u32*)GPIO_0_CONTROL_ADDR;
+    *gpio_0_control_reg = 0x05;
 
     // For example: select SIO function for the GPIO_2
-    reg_u32 *gpio_2_control_reg = (reg_u32 *)GPIO_2_CONTROL_ADDR;
-    *gpio_2_control_reg = 0x05;
+    /* reg_u32 *gpio_2_control_reg = (reg_u32 *)GPIO_2_CONTROL_ADDR; */
+    /* *gpio_2_control_reg = 0x05; */
 
     //
     // Page 46 -> 2.3.17, SIO: GPIO_OE Register

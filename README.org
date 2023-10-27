@@ -57,9 +57,9 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
   │   │   ├── build.sh                     # Project scope build script
   │   │   ├── CMakeLists.txt               # Project scope CMake configuration file
   │   │   ├── configure.sh                 # Project scope configure script to init CMake
-  │   │   ├── flash_linux.sh               # Project scope script to flash your program to Pico hardware via USB-C
+  │   │   ├── flash_xxx.sh                 # Project scope script to flash your program to Pico hardware via USB-C
   │   │   ├── pico_sdk_import.cmake        # `pico-sdk CMake` configuration (copied from PICO_SDK)
-  │   │   ├── README.md                    # Project scope README
+  │   │   ├── README.org                   # Project scope README
   │   │   └── src                          # source code files inside
   │   └── ...                              # Another C demos projects
   ├── zig-demos                            # Zig demos

@@ -1,0 +1,67 @@
+* Blinking LED via =CYW43_WL_GPIO_LED_PIN=
+
+** How to configure
+
+1. You need to provide the =PICO_SDK_PATH= env var and set to your =pico-sdk= git clone folder!!!
+
+    For example:
+
+    #+BEGIN_SRC bash
+    PICO_SDK_PATH=~/pico/pico-sdk \
+    ./configure.sh
+    #+END_SRC
+
+2. Optional, you need provide the =PICO_TOOLCHAIN_PATH= env var if ~arm-none-eabi-gcc~ doesn't in ypur ~$PATH~.
+
+    For example:
+
+    #+BEGIN_SRC bash
+    PICO_SDK_PATH=~/pico/pico-sdk \
+    PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+    ./configure.sh
+    #+END_SRC
+
+
+** How to build and flash pico
+
+Build the entire project:
+
+   #+BEGIN_SRC bash
+     ./build.sh
+   #+END_SRC
+
+
+Then run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  # For linux
+  doas ./flash_linux.sh blinking-led
+
+  # For macos
+  ./flash_macos.sh blinking-led
+#+END_SRC
+
+
+** How to view ~printf~ debug output
+
+Run ~./minicom.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  Welcome to minicom 2.8
+
+  OPTIONS:
+  Compiled on Jan  4 2021, 00:04:46.
+  Port /dev/tty.usbmodem145201, 10:28:40
+
+  Press Meta-Z for help on special keys
+
+  [ Blinking LED Demo ]
+  WFI LED is on: true
+  WFI LED is on: false
+  WFI LED is on: true
+  WFI LED is on: false
+  WFI LED is on: true
+  .... (ignore the same output)
+#+END_SRC
+
+BTW, the ~Meta-Z~ doesn't work on =MacOS + Alacritty= at this moment. So, =kill minicom= is my way to exit the =minicom= program.
