@@ -56,15 +56,15 @@ pico_cyw43_arch_none
 #
 pico_add_extra_outputs(${PROJECT_NAME})
 
-#
-# Solved the `printf` content lost after `stdio_init_all();`
-#
-target_compile_definitions(
-    ${PROJECT_NAME}
-    PRIVATE
-    PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1
-    ENABLE_DEBUG_LOG
-)
+# #
+# # Solved the `printf` content lost after `stdio_init_all();`
+# #
+# target_compile_definitions(
+#     ${PROJECT_NAME}
+#     PRIVATE
+#     PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1
+#     ENABLE_DEBUG_LOG
+# )
 
 #
 # Enalbe serial port on USB per target

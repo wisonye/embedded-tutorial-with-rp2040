@@ -29,6 +29,9 @@
     For example:
 
     #+BEGIN_SRC bash
+      # If you need a fresh build
+      rm -rf zig-out zig-cache build
+
       PICO_SDK_PATH=~/pico/pico-sdk zig build
     #+END_SRC
 
@@ -38,9 +41,12 @@
     For example:
 
     #+BEGIN_SRC bash
-    PICO_SDK_PATH=~/pico/pico-sdk \
-    PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
-    ./configure.sh
+      # If you need a fresh build
+      rm -rf zig-out zig-cache build
+
+      PICO_SDK_PATH=~/pico/pico-sdk \
+      PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+      ./configure.sh
     #+END_SRC
 
 
