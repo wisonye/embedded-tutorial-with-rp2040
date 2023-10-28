@@ -81,5 +81,18 @@ Run ~./minicom.sh~ script, it will print out the usage and example if you don't 
 
   Press CTRL-A Z for help on special keys
 
-  >>> [ Zig blinking LED ]
+  >>> [ Zig blinking-led-register ]
+  
+  >>> Reset control register value: 00000000000000000000000000000000
+  >>> Reset done register value 00000001111111111111111111111111:
+  
+  >>> Reset control register value after only enable necessary peripherals: 00000000110100110100110000011101
+  >>> Rest done register value: 00000001001111001011001111100010
+  
+  >>> Waiting for reset to be done......
+  
+  >>> Rest is done.
+  >>> Reset control register value after GPIO reset is done: 00000000110100110100110000011101
+  
+  >>> Reset done register value after GPIO reset is done: 00000001001111001011001111100010
 #+END_SRC
