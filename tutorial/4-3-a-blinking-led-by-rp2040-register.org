@@ -1,58 +1,20 @@
 * Blinking LED by using the =RP2040= register
 
-It's time to run the first =c-demo=
+It's time to run the first demo:
 
-** Configure
+** c-demo
 
-Plz replace the =~/pico/pico-sdk= to your path!!!
-
-#+BEGIN_SRC bash
-  cd c-demos/blinking-led-register
-
-  PICO_SDK_PATH=~/pico/pico-sdk \
-  ./configure.sh
-#+END_SRC
-
-If you install the =ARM GNUI Toolchain= via ARM official website (download zig file and unzip), then you need to use ~PICO_TOOLCHAIN_PATH~ env var to run the ~cmake~ command:
-
-Plz replace the =~/Downloads/arm-gnu-toolchain/bin= to your path!!!
-
-#+BEGIN_SRC bash
-  cd c-demos/blinking-led-register
-
-  PICO_SDK_PATH=~/pico/pico-sdk \
-  PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
-  ./configure.sh
-#+END_SRC
+Go to [[file:~/pico/embedded-tutorial-with-rp2040/c-demos/blinking-led-register/README.org][c-demos/blinking-led-register/README]]
 
 
-** Build
+** zig-demo
 
-#+BEGIN_SRC bash
-  ./build.sh 
-
-  ls -lht build/blinking-led-register{.uf2, .elf}
-  #-rw-r--r--  1 wison  staff    62K 23 Oct 17:13 build/blinking-led-register.uf2
-  #-rwxr-xr-x  1 wison  staff    66K 23 Oct 17:13 build/blinking-led-register.elf*
-#+END_SRC
-
-That ~build/blinking-led-register.uf2~ is the binary you should flash to your pico.
-
-
-** Flash your program to your pico
-
-#+BEGIN_SRC bash
-  # If you're on MacOS
-  ./flash_macos.sh blinking-led-register
-
-  # If you're on Linux
-  ./flash_linux.sh blinking-led-register
-#+END_SRC
+Go to [[file:~/pico/embedded-tutorial-with-rp2040/zig-demos/blink-register/README.org][zig-demos/blink-register/README]]
 
 
 ** Open =minicom= to see start blinking and see the logs
 
-That program should be blocked by the ~stdio_init_all();~ until USB is connected and =minicom= (or another serial port tool) is runnaing and attached to the correct serial device, that's because the ~PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1~ setting is in the =CMakelists.txt=.
+After compiling and uploading the program (~.uf2~) to the PICO, you still don't see the LED blinking, that's because that program is blocked by the ~stdio_init_all();~ until USB is connected and =minicom= (or another serial port tool) is running and attached to the correct serial device, that's because the ~PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1~ setting is in the =CMakelists.txt=.
 
 Run the ~./minicom.sh~ to see how to use it:
 
