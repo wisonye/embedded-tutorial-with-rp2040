@@ -77,13 +77,13 @@ fn createZigObjCompilation(
     });
 
     //
-    // default arm-none-eabi includes
+    // Default arm-none-eabi includes or from env var `ARM_STD_INCLUDE`
     //
     lib.linkLibC();
     lib.addSystemIncludePath(.{ .path = "/usr/arm-none-eabi/include" });
-
-    // Fixed for MacOS M1/M2
-    // lib.addSystemIncludePath(.{ .path = "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/arm-none-eabi/include" });
+    if (std.os.getenv("ARM_STD_INCLUDE")) |arm_std_include_path| {
+        lib.addSystemIncludePath(.{ .path = arm_std_include_path });
+    }
 
     //
     // Search for board header file

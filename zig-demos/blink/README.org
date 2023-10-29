@@ -46,8 +46,32 @@
 
       PICO_SDK_PATH=~/pico/pico-sdk \
       PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
-      ./configure.sh
+      zig build
     #+END_SRC
+
+
+3. Optional, if you're using MacOS and =brew= or custom install for the =arm-none-eabi-gcc=, then you need to provide the ARM version ~stdio.h~ include path like this.
+
+   For example:
+
+   #+BEGIN_SRC bash
+     # If you need a fresh build
+     rm -rf zig-out zig-cache build
+
+     #
+     # MacOS Inetl
+     #
+     PICO_SDK_PATH=~/pico/pico-sdk \
+     ARM_STD_INCLUDE=~/Downloads/arm-gnu-toolchain/arm-none-eabi/include \
+     zig build
+
+     #
+     # MacOS M1/M2
+     #
+     PICO_SDK_PATH=~/pico/pico-sdk \
+     ARM_STD_INCLUDE=/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/arm-none-eabi/include \
+     zig build
+   #+END_SRC
 
 
 ** How to flash the ~uf2~ to your pico
