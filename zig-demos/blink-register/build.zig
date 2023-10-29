@@ -82,6 +82,9 @@ fn createZigObjCompilation(
     lib.linkLibC();
     lib.addSystemIncludePath(.{ .path = "/usr/arm-none-eabi/include" });
 
+    // Fixed for MacOS M1/M2
+    // lib.addSystemIncludePath(.{ .path = "/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/arm-none-eabi/include" });
+
     //
     // Search for board header file
     //
