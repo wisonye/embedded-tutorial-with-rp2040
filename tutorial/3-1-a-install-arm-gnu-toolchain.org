@@ -3,11 +3,31 @@
 ** Install via package manager:
 
 #+BEGIN_SRC bash
-  # MacOS
+  # MacOS x86
   brew install armmbed/formulae/arm-none-eabi-gcc
 
   # Arch Linux
   doas pacman --sync --refresh arm-none-eabi-gcc arm-none-eabi-newlib
+#+END_SRC
+
+
+*** MacOS M1/M2
+
+For MacOS M1/M2, you might see the following error:
+
+#+BEGIN_SRC bash
+  arm-none-eabi-gcc: fatal error: cannot read spec file 'nosys.specs': No such file or directory
+#+END_SRC
+
+That's because you installed the wrong =ARM gcc=, here is how you fix that:
+
+#+BEGIN_SRC bash
+  # Remove the old one if exists
+  brew uninstall arm-none-eabi-gcc
+  brew autoremove 
+
+  # Install the correct one
+  brew install --cask gcc-arm-embedded 
 #+END_SRC
 
 
