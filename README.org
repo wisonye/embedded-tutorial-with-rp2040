@@ -51,24 +51,44 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
 #+BEGIN_SRC bash
   .
-  ├── c-demos                              # C demos
-  │   ├── cmake-build-process.org          # Explain how cmake builds your pico program
-  │   ├── blinking-led-register            # Particular demo project
-  │   │   ├── build.sh                     # Project scope build script
-  │   │   ├── CMakeLists.txt               # Project scope CMake configuration file
-  │   │   ├── configure.sh                 # Project scope configure script to init CMake
-  │   │   ├── flash_xxx.sh                 # Project scope script to flash your program to Pico hardware via USB-C
-  │   │   ├── pico_sdk_import.cmake        # `pico-sdk CMake` configuration (copied from PICO_SDK)
-  │   │   ├── README.org                   # Project scope README
-  │   │   └── src                          # source code files inside
-  │   └── ...                              # Another C demos projects
-  ├── zig-demos                            # Zig demos
-  ├── README.org                           # This file
-  └── tutorial                             # Tutorials fold
-      ├── 1-glossary-of-terms.org          # Tutorail chapter files
-      ├── 2-basic-concepts.org             # Tutorail chapter files
-      └── ...                              # Tutorail chapter files
-
+  ├── README.org                     # This file
+  │
+  ├── c-demos                        # C demos
+  │   ├── cmake-build-process.org    # Explain how cmake builds your pico program
+  │   │
+  │   ├── blinking-led-register      # Particular demo project
+  │   │   ├── build.sh               # Project scope build script
+  │   │   ├── CMakeLists.txt         # Project scope CMake configuration file
+  │   │   ├── configure.sh           # Project scope configure script to init CMake
+  │   │   ├── flash_xxx.sh           # Flash your program to Pico hardware via USB-C
+  │   │   ├── minicom.sh             # Minicom script
+  │   │   ├── pico_sdk_import.cmake  # `pico-sdk CMake` configuration (copied from PICO_SDK)
+  │   │   ├── README.org             # Project scope README
+  │   │   └── src                    # source code files inside
+  │   └── ...                        # Another C demos projects
+  │
+  ├── zig-demos                      # Zig demos
+  │   ├── README.org                 # Zig demo scope README
+  │   ├── CMakeLists.txt             # ZIg demo Top level CMake configuration
+  │   ├── build.zig                  # Zig build script
+  │   ├── flash_xxx.sh               # Flash your program to Pico hardware via USB-C
+  │   ├── minicom.sh                 # Minicom script
+  │   ├── extra_include
+  │   │   ├── lwipopts.h             # pico WIFI/TCP/IP support
+  │   │   └── pico
+  │   │       └── version.h          # Copied from CMake auto generated version header
+  │   └── src
+  │       ├── xxx.cmake              # Demo CMake configuration
+  │       ├── xxx.zig                # Demo zig entry file
+  │       └── utils                  # Shared utils
+  │           ├── bit_utils.zig      # Particular util source file
+  │           ├── driver             # Pico hardware drivers
+  │           └── register           # Pico register implementation
+  │
+  └── tutorial                       # Tutorials folder
+      ├── 1-glossary-of-terms.org    # Tutorail chapter files
+      ├── 2-basic-concepts.org       # Tutorail chapter files
+      └── ...                        # Tutorail chapter files
 #+END_SRC
 
 
