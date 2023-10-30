@@ -9,7 +9,7 @@ Go to [[file:~/pico/embedded-tutorial-with-rp2040/c-demos/blinking-led-register/
 
 ** zig-demo
 
-Go to [[file:~/pico/embedded-tutorial-with-rp2040/zig-demos/blink-register/README.org][zig-demos/blink-register/README]]
+Go to [[file:~/pico/embedded-tutorial-with-rp2040/zig-demos/README.org][zig-demos/README.org]]
 
 
 ** Open =minicom= to see start blinking and see the logs
