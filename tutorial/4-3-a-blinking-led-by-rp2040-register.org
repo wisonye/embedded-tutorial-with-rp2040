@@ -4,12 +4,12 @@ It's time to run the first demo:
 
 ** c-demo
 
-Go to [[file:~/pico/embedded-tutorial-with-rp2040/c-demos/blinking-led-register/README.org][c-demos/blinking-led-register/README]]
+Go to [[file:../c-demos/blinking-led-register/README.org][c-demos/blinking-led-register/README]]
 
 
 ** zig-demo
 
-Go to [[file:~/pico/embedded-tutorial-with-rp2040/zig-demos/README.org][zig-demos/README.org]]
+Go to [[file:../zig-demos/README.org][zig-demos/README.org]]
 
 
 ** Open =minicom= to see start blinking and see the logs
