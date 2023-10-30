@@ -2,24 +2,28 @@
 
 ** How to configure
 
-1. You need to provide the =PICO_SDK_PATH= env var and set to your =pico-sdk= git clone folder!!!
+You have a few options to configure depending on different environment variable settings:
 
-    For example:
+| Env var name        | Description                                                            |
+|---------------------+------------------------------------------------------------------------|
+| =PICO_SDK_PATH=       | Your =pico-sdk= git clone folder.                                        |
+|                     |                                                                        |
+| =PICO_TOOLCHAIN_PATH= | If ~arm-none-eabi-gcc~ doesn't in your ~$PATH~.                            |
+|                     |                                                                        |
 
-    #+BEGIN_SRC bash
-    PICO_SDK_PATH=~/pico/pico-sdk \
-    ./configure.sh
-    #+END_SRC
 
-2. Optional, you need provide the =PICO_TOOLCHAIN_PATH= env var if ~arm-none-eabi-gcc~ doesn't in ypur ~$PATH~.
+For example:
 
-    For example:
+#+BEGIN_SRC bash
+  # Option 1
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  ./configure.sh
 
-    #+BEGIN_SRC bash
-    PICO_SDK_PATH=~/pico/pico-sdk \
-    PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
-    ./configure.sh
-    #+END_SRC
+  # Option 2
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+  ./configure.sh
+#+END_SRC
 
 
 ** How to build and flash pico

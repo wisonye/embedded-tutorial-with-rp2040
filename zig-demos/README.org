@@ -117,10 +117,10 @@ Run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the usage
 
 #+BEGIN_SRC bash
   # For linux
-  doas ./flash_linux.sh zig-blink-register
+  doas ./flash_linux.sh [demo-name]
 
   # For macos
-  ./flash_macos.sh zig-blink-register
+  ./flash_macos.sh [demo-name]
 #+END_SRC
 
 
