@@ -11,6 +11,7 @@ if [ -z "$1" ]; then
     echo ">>>"
     echo ">>> [ Example ]"
     echo ">>>"
+    echo ">>> ./flash_macos.sh zig-blink-builtin-led"
     echo ">>> ./flash_macos.sh zig-blink-register"
     echo ">>>"
 

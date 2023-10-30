@@ -10,18 +10,12 @@ include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 #
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-project(zig-blink)
+project(zig-embedded-demos)
 
 #
 # initialize the Raspberry Pi Pico SDK
 #
 pico_sdk_init()
-
-#
-# There is NO source file list here, as `src/main.zig` will be compiled as an
-# `.obj` file and link to the final executable!!!
-#
-add_executable(${PROJECT_NAME})
 
 #
 # Solve the "`<stdio.h>` file not found" issue
@@ -30,47 +24,11 @@ if (CMAKE_EXPORT_COMPILE_COMMANDS)
     set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES})
 endif()
 
-
 #
-# Add library which aggregates commonly used features
+# Add sub `CMakeLists.txt`
 #
-target_link_libraries(${PROJECT_NAME}
-#
-# pico_stdlib - pico standard library, core functionality
-#
-pico_stdlib
-#
-# pico_cyw43_arch_none  - WIFI support
-# pico_cyw43_arch_lwip_threadsafe_background - WIFI support (TCP/IP)
-#
-pico_cyw43_arch_none 
-#
-# The compiled zig obj file, the filename comes from `b.addInstallFile(compiled, "xxx.o");`
-# in `build.zig`. Better to have the same name with ${PROJECT_NAME} for convenient.
-#
-"${CMAKE_SOURCE_DIR}/zig-out/${PROJECT_NAME}.o"
-)
-
-#
-# create map/bin/hex/uf2 file in addition to ELF.
-#
-pico_add_extra_outputs(${PROJECT_NAME})
-
-# #
-# # Solved the `printf` content lost after `stdio_init_all();`
-# #
-# target_compile_definitions(
-#     ${PROJECT_NAME}
-#     PRIVATE
-#     PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=-1
-#     ENABLE_DEBUG_LOG
-# )
-
-#
-# Enalbe serial port on USB per target
-#
-pico_enable_stdio_usb(${PROJECT_NAME} 1)
-pico_enable_stdio_uart(${PROJECT_NAME} 0)
+include(src/zig-blink-builtin-led.cmake)
+include(src/zig-blink-register.cmake)
 
 #
 # Debug log

@@ -1,7 +1,7 @@
 ///
 /// How this build works???
 ///
-/// 1. Compile the `src/main.zig` obj file and save it into `zig-out/{output_obj_filename}`
+/// 1. Compile the `src/xxx/main.zig` obj file and save it into `zig-out/{output_obj_filename}`
 ///
 /// 2. Run `cmake` to build the entire project and link the `zig-out/{output_obj_filename}`
 ///    to produce the `build/{CMAKE_PROJECT_NAME}.elf/uf2`
@@ -13,12 +13,6 @@ const print = std.log.err;
 // Your pico board
 //
 const pico_board = "pico_w";
-
-//
-// This value (without the `.o`) has to be the same as the cmake project
-// name in the `CMakeLists.txt`
-//
-const output_obj_filename = "zig-blink.o";
 
 //
 // Custom build error
@@ -45,33 +39,23 @@ const BuildError = error{
 };
 
 ///
-/// 1.
+/// 1. Compile the `src/xxx/main.zig` obj file and save it into `zig-out/{output_obj_filename}`
 ///
 fn createZigObjCompilation(
     b: *std.Build,
     sdk_path: []const u8,
+    zig_src: []const u8,
+    cmake_project_name: []const u8,
+    target: std.zig.CrossTarget,
+    optimize: std.builtin.OptimizeMode,
 ) BuildError!*std.Build.Step.Compile {
-    //
-    // RP2040 target
-    //
-    const target = std.zig.CrossTarget{
-        .abi = .eabi,
-        .cpu_arch = .thumb,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
-        .os_tag = .freestanding,
-    };
-
-    const optimize = b.standardOptimizeOption(.{
-        // For best binary size
-        .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseSmall,
-    });
 
     //
     // Compile object step
     //
     const lib = b.addObject(.{
-        .name = "zig-object",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .name = cmake_project_name,
+        .root_source_file = .{ .path = zig_src },
         .target = target,
         .optimize = optimize,
     });
@@ -189,12 +173,14 @@ fn createZigObjCompilation(
 }
 
 ///
-/// 2.
+/// 2. Run `cmake` to build the entire project and link the `zig-out/{output_obj_filename}`
+///    to produce the `build/{CMAKE_PROJECT_NAME}.elf/uf2`
 ///
 fn createCmakeCompilation(
     b: *std.Build,
     sdk_path: []const u8,
     obj_file_install_step: *std.Build.Step,
+    cmake_project_name: []const u8,
 ) !*std.Build.Step.Run {
     //
     // create build directory
@@ -218,11 +204,68 @@ fn createCmakeCompilation(
     const threads = try std.Thread.getCpuCount();
     const make_thread_arg = try std.fmt.allocPrint(b.allocator, "-j{d}", .{threads});
 
-    const make_argv = [_][]const u8{ "make", "-C", "./build", make_thread_arg };
+    const make_argv = [_][]const u8{
+        "make",
+        "-C",
+        "./build",
+        make_thread_arg,
+        cmake_project_name, // Only build the given target!!!
+    };
     const make_step = b.addSystemCommand(&make_argv);
     make_step.step.dependOn(&cmake_step.step);
 
     return make_step;
+}
+
+///
+/// Combind steps `1.` and `2.` into a single `zig build` step
+///
+pub fn create_build_step(
+    b: *std.Build,
+    pico_sdk_path: []const u8,
+    step_name: []const u8,
+    step_desc: []const u8,
+    zig_src: []const u8,
+    cmake_project_name: []const u8,
+    target: std.zig.CrossTarget,
+    optimize: std.builtin.OptimizeMode,
+) anyerror!void {
+    //
+    // 1.
+    //
+    const obj_lib = try createZigObjCompilation(
+        b,
+        pico_sdk_path,
+        zig_src,
+        cmake_project_name,
+        target,
+        optimize,
+    );
+    const compiled = obj_lib.getEmittedBin();
+    var obj_filename_buffer = [_]u8{0x00} ** 1024;
+    const output_obj_filename = std.fmt.bufPrint(
+        &obj_filename_buffer,
+        "{s}.o",
+        .{cmake_project_name},
+    ) catch "";
+    const install_step = b.addInstallFile(compiled, output_obj_filename);
+    install_step.step.dependOn(&obj_lib.step);
+
+    //
+    // 2.
+    //
+    const cmake_step = try createCmakeCompilation(
+        b,
+        pico_sdk_path,
+        &install_step.step,
+        cmake_project_name,
+    );
+
+    //
+    // Combine build step
+    //
+    const build_step = b.step(step_name, step_desc);
+    build_step.dependOn(&cmake_step.step);
 }
 
 ///
@@ -245,18 +288,54 @@ pub fn build(b: *std.Build) anyerror!void {
         return BuildError.PicoSdkPathIsMissing;
     }
 
-    const obj_lib = try createZigObjCompilation(b, pico_sdk_path);
-    const compiled = obj_lib.getEmittedBin();
-    const install_step = b.addInstallFile(compiled, output_obj_filename);
-    install_step.step.dependOn(&obj_lib.step);
+    //
+    // RP2040 target and optimize configuration
+    //
+    const rp2040_target = std.zig.CrossTarget{
+        .abi = .eabi,
+        .cpu_arch = .thumb,
+        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
+        .os_tag = .freestanding,
+    };
 
-    const cmake_step = try createCmakeCompilation(b, pico_sdk_path, &install_step.step);
-    b.default_step = &cmake_step.step;
+    const optimize = b.standardOptimizeOption(.{
+        // For best binary size
+        .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseSmall,
+    });
 
-    // const uf2_create_step = b.addInstallFile(.{ .path = "build/mlem.uf2" }, "firmware.uf2");
-    // uf2_create_step.step.dependOn(&make_step.step);
+    // ---------------------------------------------------------------------------
+    // Default usage echo step
+    // ---------------------------------------------------------------------------
+    const usage_echo_command = b.addSystemCommand(&[_][]const u8{
+        "echo",
+        "\n[ Available demo build commands ]\n\n" ++ "zig-blink-builtin-led\n" ++ "zig-blink-register\n",
+    });
+    const default_step = b.step("help", "Show usage");
+    default_step.dependOn(&usage_echo_command.step);
+    b.default_step = default_step;
 
-    // const uf2_step = b.step("uf2", "Create firmware.uf2");
-    // uf2_step.dependOn(&uf2_create_step.step);
-    // b.default_step = uf2_step;
+    // ---------------------------------------------------------------------------
+    // Demo build steps
+    // ---------------------------------------------------------------------------
+    try create_build_step(
+        b,
+        pico_sdk_path,
+        "zig-blink-builtin-led",
+        "Blink PICO-W built-in LED.",
+        "src/zig-blink-builtin-led.zig",
+        "zig-blink-builtin-led",
+        rp2040_target,
+        optimize,
+    );
+
+    try create_build_step(
+        b,
+        pico_sdk_path,
+        "zig-blink-register",
+        "Blink LED on GPIO_0 pin by RP2040 register.",
+        "src/zig-blink-register.zig",
+        "zig-blink-register",
+        rp2040_target,
+        optimize,
+    );
 }

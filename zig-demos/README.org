@@ -1,0 +1,173 @@
+* Zig Demos
+
+** Folder structure
+
+#+BEGIN_SRC bash
+  ├── README.org                # This file
+  ├── CMakeLists.txt            # Top level CMake configuration
+  ├── build.zig                 # Zig build script
+  ├── extra_include
+  │   ├── lwipopts.h            # pico WIFI/TCP/IP support
+  │   └── pico
+  │       └── version.h         # Copied from CMake auto generated version header
+  └── src
+      ├── blink                 # Particular Demo (cmake project name)
+      │   ├── CMakeLists.txt    # Demo scope CMake configuration
+      │   └── main.zig          # demo src file will be compiled into obj and linked to CMake binary
+      │
+      ├── blink-register
+      │   ├── CMakeLists.txt
+      │   └── main.zig
+      │
+      ├── ......
+      │   ├── CMakeLists.txt
+      │   └── main.zig
+      │
+      └── utils                 # Shared utils
+          ├── bit_utils.zig
+          ├── driver            # Pico hardware drivers
+          └── register          # Pico register implementation
+#+END_SRC
+
+
+** How to configure
+
+1. Change your pico board name
+
+  #+BEGIN_SRC zig
+    const pico_board = "pico_w";
+  #+END_SRC 
+
+  The default pico board name is defined in ~build.zig~, if that's NOT your pico board, change it before building the project.
+
+  
+** How to build
+
+You have a few options to build depending on different environment variable settings:
+
+| Env var name        | Description                                                            |
+|---------------------+------------------------------------------------------------------------|
+| =PICO_SDK_PATH=       | Your =pico-sdk= git clone folder.                                        |
+|                     |                                                                        |
+| =PICO_TOOLCHAIN_PATH= | If ~arm-none-eabi-gcc~ doesn't in your ~$PATH~.                            |
+|                     |                                                                        |
+| =ARM_STD_INCLUDE=     | If you're using MacOS and =brew= to install =arm-none-eabi-gcc=,  then you |
+|                     | need to provide the ARM version ~stdio.h~ include path.                  |
+
+
+For example:
+
+#+BEGIN_SRC bash
+  # If you need a fresh build
+  rm -rf zig-out zig-cache build
+
+  # Option 1
+  PICO_SDK_PATH=~/pico/pico-sdk zig build [demo-name]
+
+
+  # Option 2
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  PICO_TOOLCHAIN_PATH=~/Downloads/arm-gnu-toolchain/bin \
+  zig build [demo-name]
+
+
+  #
+  # Option 3 - MacOS Inetl
+  #
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  ARM_STD_INCLUDE=~/Downloads/arm-gnu-toolchain/arm-none-eabi/include \
+  zig build [demo-name]
+
+  #
+  # Option 3 - MacOS M1/M2
+  #
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  ARM_STD_INCLUDE=/Applications/ArmGNUToolchain/12.3.rel1/arm-none-eabi/arm-none-eabi/include \
+  zig build [demo-name]
+#+END_SRC
+
+
+About the optional =demo-name= parameter:
+
+If you don't provide the =demo-name=, the default =zig build= prints out the available demo command like below:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk zig build zig-blink-builtin-led
+
+  # [ Available demo build commands ]
+
+  # zig-blink-builtin-led
+  # zig-blink-register
+#+END_SRC
+
+
+Just pick the one you wanted to build and pass it to =zig build= to produce the actual demo binary.
+
+For example:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk zig build zig-blink-builtin-led
+#+END_SRC
+
+The output ~.uf2~ binary located in the ~build~ folder:
+
+#+BEGIN_SRC bash
+  ls -lht build/*.uf2
+
+  # -rw-r--r--  1 87K 30 Oct 18:19 build/zig-blink-register.uf2
+  # -rw-r--r--  1 538K 30 Oct 18:13 build/zig-blink-builtin-led.uf2
+#+END_SRC
+
+
+** How to flash the ~uf2~ to your pico
+
+Run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  # For linux
+  doas ./flash_linux.sh zig-blink-register
+
+  # For macos
+  ./flash_macos.sh zig-blink-register
+#+END_SRC
+
+
+Pay attention:
+
+Some demos are configured to wait for the serial device to be connected, that's why you have to run ~minicom.sh~ before seeing the blinking LED!!!
+
+
+** How to view ~printf~ debug output
+
+Run ~./minicom.sh~ script, it will print out the usage and example if you don't provide any parameter.
+
+#+BEGIN_SRC bash
+  # MacOS
+  ./minicom.sh /dev/tty.usbmodem14701
+
+  # Linux
+  doas ./minicom.sh /dev/ttyACM0
+
+  # Welcome to minicom 2.9
+
+  # OPTIONS: I18n
+  # Compiled on Sep 23 2023, 19:55:08.
+  # Port /dev/ttyACM0, 10:55:14
+
+  # Press CTRL-A Z for help on special keys
+
+  # >>> [ Zig blink LED ]
+
+  # >>> Reset control register value: 00000000000000000000000000000000
+  # >>> Reset done register value 00000001111111111111111111111111:
+
+  # >>> Reset control register value after only enable necessary peripherals: 00000000110100110100110000011101
+  # >>> Rest done register value: 00000001001111001011001111100010
+
+  # >>> Waiting for reset to be done......
+
+  # >>> Rest is done.
+  # >>> Reset control register value after GPIO reset is done: 00000000110100110100110000011101
+
+  # >>> Reset done register value after GPIO reset is done: 00000001001111001011001111100010
+#+END_SRC

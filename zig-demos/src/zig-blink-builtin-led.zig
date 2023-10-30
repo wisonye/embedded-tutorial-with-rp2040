@@ -12,7 +12,7 @@ const std = @import("std");
 export fn main() c_int {
     _ = c.stdio_init_all();
 
-    _ = c.printf("\n>>> [ Zig blinking onboard LED ]");
+    _ = c.printf("\n>>> [ Zig blink Pico W builtin LED ]");
 
     if (c.cyw43_arch_init() != 0) {
         return -1;

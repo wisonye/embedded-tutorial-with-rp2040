@@ -3,9 +3,9 @@ pub const c = @cImport({
     @cInclude("pico/stdlib.h");
 });
 const std = @import("std");
-const reg_u32 = @import("register/common.zig").reg_u32;
-const ResetRegister = @import("register/reset.zig");
-const BitUtil = @import("utils/bit_utils.zig");
+const reg_u32 = @import("./utils/register/common.zig").reg_u32;
+const ResetRegister = @import("./utils/register/reset.zig");
+const BitUtil = @import("./utils/bit_utils.zig");
 
 const LED_PIN: u32 = 0;
 
@@ -248,7 +248,7 @@ fn blinking_led_loop() void {
 ///
 export fn main() c_int {
     _ = c.stdio_init_all();
-    _ = c.printf("\n>>> [ Zig blinking-led-register ]\n");
+    _ = c.printf("\n>>> [ Zig blink LED ]\n");
 
     _ = enable_gpio_and_wait_for_it_stable() catch void;
     blinking_led_loop();

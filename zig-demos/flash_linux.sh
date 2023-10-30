@@ -6,15 +6,15 @@ if [ -z "$1" ]; then
     echo ">>>"
     echo ">>> 1. Unplug your pico board"
     echo ">>> 2. Hold down the BOOTSEL button and re-plug your pico board for a few seconds"
-    echo ">>> 3. Run 'lsblk' or 'doas dmesg | tail' to confirm pico attached as USB device. If it doesn't 'dev/sdb1' then change it in the script."
+    echo ">>> 3. Run 'lsblk' or 'doas dmesg | tail' to confirm pico attached as USB device"
     echo ">>>"
     echo ">>> doas ./flash_linux.sh DEMO_NAME_HERE"
     echo ">>>"
     echo ">>> [ Example ]"
     echo ">>>"
+    echo ">>> doas ./flash_linux.sh zig-blink-builtin-led"
     echo ">>> doas ./flash_linux.sh zig-blink-register"
     echo ">>>"
-
     exit 0
 fi
 
