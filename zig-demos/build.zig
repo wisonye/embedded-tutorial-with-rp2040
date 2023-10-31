@@ -133,7 +133,7 @@ fn createZigObjCompilation(
     const pico_sdk_src = try std.fmt.allocPrint(b.allocator, "{s}/src", .{sdk_path});
     const find = try b.findProgram(&.{"find"}, &.{});
     const find_argv = [_][]const u8{ find, pico_sdk_src, "-type", "d", "-name", "include" };
-    const directories = b.exec(&find_argv);
+    const directories = b.run(&find_argv);
     var splits = std.mem.splitSequence(u8, directories, "\n");
 
     while (splits.next()) |include_dir| {
