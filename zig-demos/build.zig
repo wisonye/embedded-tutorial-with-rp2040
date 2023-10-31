@@ -48,6 +48,7 @@ fn createZigObjCompilation(
     cmake_project_name: []const u8,
     target: std.zig.CrossTarget,
     optimize: std.builtin.OptimizeMode,
+    custom_build_options: *std.Build.Step.Options,
 ) BuildError!*std.Build.Step.Compile {
 
     //
@@ -60,12 +61,7 @@ fn createZigObjCompilation(
         .optimize = optimize,
     });
 
-    //
-    // Custom build options
-    //
-    const build_options = b.addOptions();
-    build_options.addOption(bool, "enable_debug_log", false);
-    lib.addOptions("Custom options", build_options);
+    lib.addOptions("build_options", custom_build_options);
 
     //
     // Default arm-none-eabi includes or from env var `ARM_STD_INCLUDE`
@@ -236,6 +232,7 @@ pub fn create_build_step(
     cmake_project_name: []const u8,
     target: std.zig.CrossTarget,
     optimize: std.builtin.OptimizeMode,
+    custom_build_options: *std.Build.Step.Options,
 ) anyerror!void {
     //
     // 1.
@@ -247,6 +244,7 @@ pub fn create_build_step(
         cmake_project_name,
         target,
         optimize,
+        custom_build_options,
     );
     const compiled = obj_lib.getEmittedBin();
     var obj_filename_buffer = [_]u8{0x00} ** 1024;
@@ -296,7 +294,7 @@ pub fn build(b: *std.Build) anyerror!void {
     }
 
     //
-    // RP2040 target and optimize configuration
+    // RP2040 target, optimize and custom build options
     //
     const rp2040_target = std.zig.CrossTarget{
         .abi = .eabi,
@@ -310,12 +308,22 @@ pub fn build(b: *std.Build) anyerror!void {
         .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseSmall,
     });
 
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "enable_debug_log", b.option(
+        bool,
+        "enable_debug_log",
+        "Enable debug log or not.",
+    ) orelse false);
+
     // ---------------------------------------------------------------------------
     // Default usage echo step
     // ---------------------------------------------------------------------------
     const usage_echo_command = b.addSystemCommand(&[_][]const u8{
         "echo",
-        "\n[ Available demo build commands ]\n\n" ++ "zig-blink-builtin-led\n" ++ "zig-blink-register\n",
+        "\n[ Available demo build commands ]\n\n" ++
+            "zig-blink-builtin-led\n" ++
+            "zig-blink-register\n" ++
+            "touch-switch-button-demo\n",
     });
     const default_step = b.step("help", "Show usage");
     default_step.dependOn(&usage_echo_command.step);
@@ -333,6 +341,7 @@ pub fn build(b: *std.Build) anyerror!void {
         "zig-blink-builtin-led",
         rp2040_target,
         optimize,
+        build_options,
     );
 
     try create_build_step(
@@ -344,6 +353,7 @@ pub fn build(b: *std.Build) anyerror!void {
         "zig-blink-register",
         rp2040_target,
         optimize,
+        build_options,
     );
 
     try create_build_step(
@@ -355,5 +365,6 @@ pub fn build(b: *std.Build) anyerror!void {
         "touch-switch-button-demo",
         rp2040_target,
         optimize,
+        build_options,
     );
 }
