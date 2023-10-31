@@ -90,6 +90,7 @@ If you don't provide the =demo-name=, the default =zig build= prints out the ava
 
   # zig-blink-builtin-led
   # zig-blink-register
+  # touch-switch-button-demo
 #+END_SRC
 
 
@@ -108,6 +109,19 @@ The output ~.uf2~ binary located in the ~build~ folder:
 
   # -rw-r--r--  1 87K 30 Oct 18:19 build/zig-blink-register.uf2
   # -rw-r--r--  1 538K 30 Oct 18:13 build/zig-blink-builtin-led.uf2
+#+END_SRC
+
+
+*** About the ~-Denable_debug_log=true~ build option
+
+For some hardware driver implementations defined in =./src/utils/driver=, you need to provide the ~-Denable_debug_log=true~ custom build option to enable the debugging purpose ~c.printf~ to be compiled.
+
+For example:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  ARM_STD_INCLUDE=~/Downloads/arm-gnu-toolchain/arm-none-eabi/include \
+  zig build -Denable_debug_log=true touch-switch-button-demo
 #+END_SRC
 
 
