@@ -3,7 +3,7 @@ pub const c = @cImport({
     @cInclude("pico/stdlib.h");
 });
 const std = @import("std");
-// const build_options = @import("build_options");
+const build_options = @import("build_options");
 
 ///
 /// GPIO10 (pin14 in pin diagram)
@@ -74,20 +74,20 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
                 .last_press_down_sequence = [_]bool{ false, false },
             };
 
-            // if (build_options.enable_debug_log) {
-            //     c.printf(
-            //         ">>> [ TSB_init_with_default_settings ] - {" ++
-            //             "\n\tsignal_pin: GPIO_%d" ++
-            //             "\n\tuse_interrupt: %s" ++
-            //             "\n\tinterrupt_callback: %s" ++
-            //             "\n\tcallback: %s" ++
-            //             "\n}\n",
-            //         me.config.signal_pin,
-            //         if (me.config.use_interrupt) "true" else "false",
-            //         if (me.config.interrupt_callback == null) "NULL" else "interrupt_callback has been set",
-            //         if (me.config.callback == null) "NULL" else "callback has been set",
-            //     );
-            // }
+            if (build_options.enable_debug_log) {
+                _ = c.printf(
+                    "\n>>> [ TSB_init_with_default_settings ] - {" ++
+                        "\n\tsignal_pin: GPIO_%d" ++
+                        "\n\tuse_interrupt: %s" ++
+                        "\n\tinterrupt_callback: %s" ++
+                        "\n\tcallback: %s" ++
+                        "\n}\n",
+                    me.config.signal_pin,
+                    if (me.config.use_interrupt) "true" else "false",
+                    if (me.config.interrupt_callback == null) "NULL" else "interrupt_callback has been set",
+                    if (me.config.callback == null) "NULL" else "callback has been set",
+                );
+            }
 
             //
             // Init and set GPIO to in and pull-up
@@ -96,12 +96,12 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
             c.gpio_set_dir(me.config.signal_pin, false);
             c.gpio_pull_up(me.config.signal_pin);
 
-            // if (build_options.enable_debug_log) {
-            //     c.printf(
-            //         ">>> [ TSB_init_with_default_settings ] - setup GPIO_%d successfully.\n",
-            //         me.config.signal_pin,
-            //     );
-            // }
+            if (build_options.enable_debug_log) {
+                _ = c.printf(
+                    "\n>>> [ TSB_init_with_default_settings ] - setup GPIO_%d successfully.\n",
+                    me.config.signal_pin,
+                );
+            }
 
             return me;
         }
@@ -125,20 +125,20 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
                 .last_press_down_sequence = [_]bool{ false, false },
             };
 
-            // if (build_options.enable_debug_log) {
-            //     c.printf(
-            //         ">>> [ TSB_init ] - {" ++
-            //             "\n\tsignal_pin: GPIO_%d" ++
-            //             "\n\tuse_interrupt: %s" ++
-            //             "\n\tinterrupt_callback: %s" ++
-            //             "\n\tcallback: %s" ++
-            //             "\n}\n",
-            //         me.config.signal_pin,
-            //         if (me.config.use_interrupt) "true" else "false",
-            //         if (me.config.interrupt_callback == null) "NULL" else "interrupt_callback has been set",
-            //         if (me.config.callback == null) "NULL" else "callback has been set",
-            //     );
-            // }
+            if (build_options.enable_debug_log) {
+                _ = c.printf(
+                    "\n>>> [ TSB_init ] - {" ++
+                        "\n\tsignal_pin: GPIO_%d" ++
+                        "\n\tuse_interrupt: %s" ++
+                        "\n\tinterrupt_callback: %s" ++
+                        "\n\tcallback: %s" ++
+                        "\n}\n",
+                    me.config.signal_pin,
+                    if (me.config.use_interrupt) "true" else "false",
+                    if (me.config.interrupt_callback == null) "NULL" else "interrupt_callback has been set",
+                    if (me.config.callback == null) "NULL" else "callback has been set",
+                );
+            }
 
             //
             // Setup GPIO interrupt
@@ -151,12 +151,12 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
                     me.config.interrupt_callback,
                 );
 
-                // if (build_options.enable_debug_log) {
-                //     c.printf(
-                //         ">>> [ TSB_init ] - enable GPIO_%d interrupt successfully.\n",
-                //         me.config.signal_pin,
-                //     );
-                // }
+                if (build_options.enable_debug_log) {
+                    _ = c.printf(
+                        "\n>>> [ TSB_init ] - enable GPIO_%d interrupt successfully.\n",
+                        me.config.signal_pin,
+                    );
+                }
             }
             //
             // Init and set GPIO to in and pull-up
@@ -166,9 +166,12 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
                 c.gpio_set_dir(me.config.signal_pin, false);
                 c.gpio_pull_up(me.config.signal_pin);
 
-                // if (build_options.enable_debug_log) {
-                //     c.printf(">>> [ TSB_init ] - setup GPIO_%d successfully.\n", me.config.signal_pin);
-                // }
+                if (build_options.enable_debug_log) {
+                    _ = c.printf(
+                        "\n>>> [ TSB_init ] - setup GPIO_%d successfully.\n",
+                        me.config.signal_pin,
+                    );
+                }
             }
 
             return me;
@@ -196,9 +199,9 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
 
             // Pressed once
             if (self.last_press_down_sequence[0] and self.last_press_down_sequence[1]) {
-                // if (build_options.enable_debug_log) {
-                //     c.printf("\n>>> [ TSB_press_check ] - touch switch button pressed once.\n");
-                // }
+                if (build_options.enable_debug_log) {
+                    _ = c.printf("\n>>> [ TSB_press_check ] - touch switch button pressed once.\n");
+                }
 
                 // Reset
                 self.last_press_down_sequence[0] = false;
