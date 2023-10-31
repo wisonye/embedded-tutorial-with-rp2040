@@ -6,7 +6,19 @@ const std = @import("std");
 const CreateTouchSwitchButtonWithCallbackParameterType = @import("./utils/driver/button/touch-switch-button.zig").CreateTouchSwitchButtonWithCallbackParameterType;
 
 const Game = struct {
-    name: []const u8,
+    _name: []const u8,
+
+    const Self = @This();
+
+    pub fn init(game_name: []const u8) Self {
+        return Self{
+            ._name = game_name,
+        };
+    }
+
+    pub fn get_name(self: *const Self) []const u8 {
+        return self._name;
+    }
 };
 
 ///
@@ -22,24 +34,30 @@ fn my_button_interrupt_callback(gpio: u32, event_mask: u32) void {
 ///
 ///
 fn button_1_pressed_callbcak(data: *const Game) void {
-    _ = data;
-    _ = c.printf("\n>>> button_1_press_callback");
+    _ = c.printf(
+        "\n>>> button_1_press_callback, data (game name): %s",
+        @as([*]const u8, @ptrCast(data.get_name())),
+    );
 }
 
 ///
 ///
 ///
 fn button_2_pressed_callbcak(data: *const Game) void {
-    _ = data;
-    _ = c.printf("\n>>> button_2_press_callback");
+    _ = c.printf(
+        "\n>>> button_2_press_callback, data (game name): %s",
+        @as([*]const u8, @ptrCast(data.get_name())),
+    );
 }
 
 ///
 ///
 ///
 fn button_3_pressed_callbcak(data: *const Game) void {
-    _ = data;
-    c.print("\n>>> button_3_press_callback");
+    _ = c.printf(
+        "\n>>> button_3_press_callback, data (game name): %s",
+        @as([*]const u8, @ptrCast(data.get_name())),
+    );
 }
 
 ///
@@ -57,7 +75,7 @@ export fn main() c_int {
     _ = c.printf("\n>>> [ Zig Touch Switch Button Demo ]");
 
     const my_game = Game{
-        .name = "Fun Game",
+        ._name = "My fun game:)",
     };
 
     var button1 = MyTouchSwitchButton.init_with_default_settings(
@@ -73,9 +91,18 @@ export fn main() c_int {
         .data_to_callback = &my_game,
     });
 
+    var button3 = MyTouchSwitchButton.init(.{
+        .signal_pin = 12,
+        .use_interrupt = false,
+        .interrupt_callback = null,
+        .callback = button_3_pressed_callbcak,
+        .data_to_callback = &my_game,
+    });
+
     while (true) {
         button1.press_check();
         button2.press_check();
+        button3.press_check();
         c.sleep_ms(10);
     }
 }
