@@ -29,6 +29,7 @@ endif()
 #
 include(src/zig-blink-builtin-led.cmake)
 include(src/zig-blink-register.cmake)
+include(src/touch-switch-button-demo.cmake)
 
 #
 # Debug log

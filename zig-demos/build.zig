@@ -61,6 +61,13 @@ fn createZigObjCompilation(
     });
 
     //
+    // Custom build options
+    //
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "enable_debug_log", false);
+    lib.addOptions("Custom options", build_options);
+
+    //
     // Default arm-none-eabi includes or from env var `ARM_STD_INCLUDE`
     //
     lib.linkLibC();
@@ -335,6 +342,17 @@ pub fn build(b: *std.Build) anyerror!void {
         "Blink LED on GPIO_0 pin by RP2040 register.",
         "src/zig-blink-register.zig",
         "zig-blink-register",
+        rp2040_target,
+        optimize,
+    );
+
+    try create_build_step(
+        b,
+        pico_sdk_path,
+        "touch-switch-button-demo",
+        "TouchSwitchButton driver demo.",
+        "src/touch-switch-button-demo.zig",
+        "touch-switch-button-demo",
         rp2040_target,
         optimize,
     );

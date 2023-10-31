@@ -5,7 +5,7 @@ pub const c = @cImport({
 const std = @import("std");
 const reg_u32 = @import("./utils/register/common.zig").reg_u32;
 const ResetRegister = @import("./utils/register/reset.zig");
-const BitUtil = @import("./utils/bit_utils.zig");
+const BitUtil = @import("./utils/bits.zig");
 
 const LED_PIN: u32 = 0;
 
