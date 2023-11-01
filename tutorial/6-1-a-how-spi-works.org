@@ -1,0 +1,180 @@
+* How SPI works
+
+** Theory and protocol
+
+The high-level explanation looks like this:
+
+
+#+html: <p align="center"><img src="tutorial/tutorial-images/spi-overview.png" /></p>
+#+ATTR_HTML: :width 80%
+[[file:tutorial-images/spi-overview.png]]
+
+
+There are 4 pins/lines conntected between the =RP2040= and the SPI peripheral:
+
+- =SLCK=: SPI clock
+- =CSn=: Chip select
+- =MISO=: SPI Master (RP2040) In  Slave (Peripheral) Out, aka =SPI TX= (transmit)
+- =MOSI=: SPI Master (RP2040) Out Slave (Peripheral) In, aka =SPI RX= (receive)
+
+  When the transaction starts, The =SLCK= starts to generate the pulse and shift bit-by-bit from the mater register to the slave register over =MOSI= and shift bit-by-bit from the salve register to the master register over =MISO=. That's why they have to work in full-duplex mode (you have to send bits out from the register before you can receive the bits into the register)!!!
+
+
+And here is the timing diagram to describe the transaction detail:
+
+
+#+html: <p align="center"><img src="tutorial/tutorial-images/spi-timing-diagram.png" /></p>
+#+ATTR_HTML: :width 80%
+[[file:tutorial-images/spi-timing-diagram.png]]
+
+Because you can connect multiple SPI peripherals at the same time via different =ports= (=SPI0= and =SPI1= in =RP2040=), that's why the first step before the transaction is called =Chip Selection= (select which connected SPI peripheral you're talking to):
+
+- =CS= (to the particular connected SPI peripheral) set to low means I'm ready to talk with you (not the other one)
+
+- =SLCK= generates pulse driver the communication. e.g. the diagram shows 8bits peripheral, then it generates 8 pulses.
+
+
+**  =MISO= and =MOSI= both have different meanings related to master or slave 
+
+For example:
+
+=RP2040 PICO=  ----> =SPI peripheral= (OLED/LED/etc)
+
+- For =RP2040 PICO=:
+
+    =MOSI= means the pin that is used to send data out from pico to peripheral.
+    =MISO= means the pin that is jused to receive data from peripheral to pico.
+
+
+- For =SPI peripheral=
+
+    =MOSI= means the pin that is used to send data out from peripheral to pico.
+    =MISO= means the pin that is used to receive data from pico to peripheral .
+
+
+** C SDK guide
+
+*** Configuration
+
+Your binary has to link to =hardware_spi= library at the linking stage:
+
+#+BEGIN_SRC cmake
+  target_link_libraries(YOUR_PROJECT_NAME_HERE pico_stdlib hardware_spi)
+#+END_SRC
+
+
+*** Init
+
+| Function         | Description                                                         |
+|------------------+---------------------------------------------------------------------|
+| =spi_init=         | Enable and init, sets master-mode.                                  |
+| =spi_deinit=       | Disable                                                             |
+| =spi_set_baudrate= | Set SPI frequency as close as possible to baudrate                  |
+| =spi_set_slave=    | Configure the SPI for master- or slave-mode operation               |
+| =spi_set_format=   | Configure how the SPI serialises and deserialises data on the wire. |
+| =spi_get_index=    |                                                                     |
+| =spi_get_hw=       |                                                                     |
+| =spi_get_const_hw= |                                                                     |
+| =spi_is_writable=  |                                                                     |
+| =spi_is_readable=  |                                                                     |
+| =spi_is_busy=      |                                                                     |
+|                  |                                                                     |
+
+
+For example:
+
+#+BEGIN_SRC c
+  #include "pico/stdlib.h"
+  #include "hardware/spi.h"
+
+  //
+  // This value comes from the target peripheral data shhet
+  // For example: 1 MHz
+  // 
+  uint baudrate = 1000 * 1000;
+
+  //
+  // Either `spi0` or `spi1`, it defined in:
+  // {PICO_SDK_PATH}/src/rp2_common/hardware_spi/include/hardware/spi.h
+  //
+  spi_inst_t *spi_port = spi0;
+
+  //
+  // Enable and init SPI port
+  //
+  spi_init(spi_port, baudrate);
+
+  //
+  // set the SPI communication format, those settings should
+  // come from the target peripheral data sheet.
+  //
+  uint data_bits = 8; // Only support 8bits or 16bits
+  spi_cpol_t spi_clock_out_polarity = SPI_CPOL_0;
+  spi_cpha_t spi_clock_out_phase = SPI_CPHA_0;
+  spi_order_t order = SPI_MSB_FIRST;
+  spi_set_format(
+      spi_port,
+      data_bits,
+      spi_clock_out_polarity,
+      spi_clock_out_phase,
+  order);
+
+  //
+  // Configure GPIO pin to enable SPI functionality, here is the default SPI pins:
+  // They defined in {PICO_SDK_PATH}/src/boards/include/boards/pico_w.h
+  //
+  // #define PICO_DEFAULT_SPI 0
+  // #define PICO_DEFAULT_SPI_SCK_PIN 18
+  // #define PICO_DEFAULT_SPI_TX_PIN 19
+  // #define PICO_DEFAULT_SPI_RX_PIN 16
+  // #define PICO_DEFAULT_SPI_CSN_PIN 17
+  //
+  gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
+  gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+  gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
+  gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
+#+END_SRC
+
+
+*** Set and receive data
+
+| Function                    | Description                                                    |
+|-----------------------------+----------------------------------------------------------------|
+| =spi_write_read_blocking=     | Write len bytes from src to SPI, and discard any data received |
+|                             | back Blocks until all data is transferred. No timeout, as SPI  |
+|                             | hardware always transfers at a known data rate.                |
+| =spi_write_blocking=          |                                                                |
+| =spi_read_blocking=           |                                                                |
+|                             |                                                                |
+| =spi_write16_read16_blocking= |                                                                |
+| =spi_write16_blocking=        |                                                                |
+| =spi_read16_blocking=         |                                                                |
+|                             |                                                                |
+
+
+For example:
+
+#+BEGIN_SRC c
+  #define BUF_LEN         0x100
+
+  uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
+
+  // Initialize output buffer if needed
+  for (size_t i = 0; i < BUF_LEN; ++i) {
+      out_buf[i] = i;
+  }
+
+  printf("SPI master says: The following buffer will be written to MOSI endlessly:\n");
+
+  for (size_t i = 0; ; ++i) {
+      // Write the output buffer to MOSI, and at the same time read from MISO.
+      spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
+
+      // Write to stdio whatever came in on the MISO line.
+      printf("SPI master says: read page %d from the MISO line:\n", i);
+      printbuf(in_buf, BUF_LEN);
+
+      // Sleep for ten seconds so you get a chance to read the output.
+      sleep_ms(10 * 1000);
+  }
+#+END_SRC

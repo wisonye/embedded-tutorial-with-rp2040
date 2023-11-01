@@ -121,4 +121,10 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
    5.2 [[file:tutorial/5-2-a-how-printf-print-to-usb-and-uart.org][How the ~printf~ actually print to USB and UART]]
 
    5.3 [[file:tutorial/5-3-a-solve-losing-printf-content.org][Solve the losing ~printf~ content after ~stdio_init_all();~ call]]
+
+6. SPI (Serial Peripheral Interface)
+
+   6.1 [[file:tutorial/6-1-a-how-spi-works.org][How SPI works]]
+
+   6.2 SPI demo
    

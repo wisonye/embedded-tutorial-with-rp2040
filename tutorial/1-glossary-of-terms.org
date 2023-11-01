@@ -46,6 +46,8 @@
 |                     | uses a data queue to transfer data across an SPI bus.                        |
 | =QSPI=                | Quad SPI,  goes beyond dual SPI, adding two more I/O lines (SIO2 and         |
 |                     | SIO3) and sends 4 data bits per clock cycle.                                 |
+| =MISO=                | SPI protocol term: Master In Slave Out                                       |
+| =MOSI=                | SPI protocol term: Master Out Slave In                                       |
 | =XIP=                 | Execute-in-place, the processor can execute the code from the external flash |
 |                     | witout copying the code to internal memory. [[https://en.wikipedia.org/wiki/Execute_in_place][wiki-link]]                        |
 | =ROSC=                | Ring Oscillator                                                              |
