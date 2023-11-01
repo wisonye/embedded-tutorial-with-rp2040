@@ -24,10 +24,10 @@ const Game = struct {
 ///
 ///
 ///
-fn my_button_interrupt_callback(gpio: u32, event_mask: u32) void {
+fn my_button_interrupt_callback(gpio: u32, event_mask: u32) callconv(.C) void {
     _ = event_mask;
     _ = gpio;
-    _ = c.printf("\n>>> my_interrupt_callback", .{});
+    _ = c.printf("\n>>> my_interrupt_callback");
 }
 
 ///
@@ -91,18 +91,18 @@ export fn main() c_int {
         .data_to_callback = &my_game,
     });
 
-    var button3 = MyTouchSwitchButton.init(.{
+    const button3 = MyTouchSwitchButton.init(.{
         .signal_pin = 12,
-        .use_interrupt = false,
-        .interrupt_callback = null,
-        .callback = button_3_pressed_callbcak,
+        .use_interrupt = true,
+        .interrupt_callback = my_button_interrupt_callback,
+        .callback = null,
         .data_to_callback = &my_game,
     });
+    _ = button3;
 
     while (true) {
         button1.press_check();
         button2.press_check();
-        button3.press_check();
         c.sleep_ms(10);
     }
 }

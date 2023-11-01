@@ -1,6 +1,7 @@
 pub const c = @cImport({
     @cInclude("stdio.h");
     @cInclude("pico/stdlib.h");
+    // @cInclude("hardware/gpio.h");
 });
 const std = @import("std");
 const build_options = @import("build_options");
@@ -18,8 +19,11 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
         ///
         /// Butto pressed callback
         ///
-        pub const TouchSwitchButtonPressedCallback = *const fn (data: *const T) void;
-        pub const TouchSwitchButtonInterruptCallback = *const fn (gpio: u32, event_mask: u32) void;
+        pub const TouchSwitchButtonPressedCallback = ?*const fn (data: *const T) void;
+        pub const TouchSwitchButtonInterruptCallback = ?*const fn (
+            gpio: u32,
+            event_mask: u32,
+        ) callconv(.C) void;
 
         ///
         /// - `signal_pin`: set to GPIO10 (pin14 in pin diagram) by default.
@@ -38,8 +42,8 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
         pub const Config = struct {
             signal_pin: u8,
             use_interrupt: bool,
-            interrupt_callback: ?TouchSwitchButtonInterruptCallback,
-            callback: ?TouchSwitchButtonPressedCallback,
+            interrupt_callback: TouchSwitchButtonInterruptCallback,
+            callback: TouchSwitchButtonPressedCallback,
             data_to_callback: *const T,
         };
 
@@ -60,7 +64,7 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
         /// or trigger by interrupt, then you should call `TSB_init` instead.
         ///
         pub fn init_with_default_settings(
-            comptime button_pressed_callback: ?TouchSwitchButtonPressedCallback,
+            comptime button_pressed_callback: TouchSwitchButtonPressedCallback,
             comptime data_to_callback: *const T,
         ) Self {
             const me: Self = .{
@@ -108,6 +112,9 @@ pub fn CreateTouchSwitchButtonWithCallbackParameterType(comptime T: type) type {
 
         ///
         /// Init `TouchSwitchButton` instance with custom settings
+        ///
+        /// When `use_interrupt` set to `true`, `interrupt_callback` has to be set, otherwise, compile
+        /// time error.
         ///
         pub fn init(comptime config: Config) Self {
             if (config.use_interrupt and config.interrupt_callback == null) {
