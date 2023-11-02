@@ -62,9 +62,9 @@ That means if you want to send bytes to the =RESET (Rest control) Register=, you
 
 You need to know the basic bitwise operations, as that's the fundamental way to read data from or write data to the RP2040 register.
 
-+ Use ~value |= (1<< x)~ to set bit x to ~1~ (AKA: set a bit)
-+ Use ~value &= ~(1<< x)~ to set bit x to ~0~ (AKA: clear a bit)
-+ Use ~value ^= (1<< x)~ to toggle bit x   (AKA: toggle/flip a bit)
++ Use ~value |= (1<< x)~  to set bit x to ~1~ (AKA: set a bit)
++ Use ~value &= ~~(1<< x)~ to set bit x to ~0~ (AKA: clear a bit)
++ Use ~value ^= (1<< x)~  to toggle bit x   (AKA: toggle/flip a bit)
 
 For example:
 
