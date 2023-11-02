@@ -5,6 +5,16 @@ pub const c = @cImport({
 const std = @import("std");
 const CreateTouchSwitchButtonWithCallbackParameterType = @import("./utils/driver/button/touch-switch-button.zig").CreateTouchSwitchButtonWithCallbackParameterType;
 
+//
+// Button pins
+//
+// const BUTTON_1_PIN = 10; // Default pin
+const BUTTON_2_PIN = 11;
+const BUTTON_3_PIN = 12;
+
+///
+///
+///
 const Game = struct {
     _name: []const u8,
 
@@ -84,7 +94,7 @@ export fn main() c_int {
     );
 
     var button2 = MyTouchSwitchButton.init(.{
-        .signal_pin = 11,
+        .signal_pin = BUTTON_2_PIN,
         .use_interrupt = false,
         .interrupt_callback = null,
         .callback = button_2_pressed_callbcak,
@@ -92,7 +102,7 @@ export fn main() c_int {
     });
 
     const button3 = MyTouchSwitchButton.init(.{
-        .signal_pin = 12,
+        .signal_pin = BUTTON_3_PIN,
         .use_interrupt = true,
         .interrupt_callback = my_button_interrupt_callback,
         .callback = null,
