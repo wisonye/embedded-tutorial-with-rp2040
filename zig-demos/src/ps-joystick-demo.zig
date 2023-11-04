@@ -81,6 +81,7 @@ export fn main() c_int {
         .touch_click_callback = touch_click_callback,
         .callback_param = &my_game,
         .debug_print_type = MyPsJoyStick.DebugPrintType.Data,
+        // .debug_print_type = MyPsJoyStick.DebugPrintType.Bar,
     });
 
     // var joystick = MyPsJoyStick.init(.{

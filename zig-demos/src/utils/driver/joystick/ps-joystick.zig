@@ -364,20 +364,20 @@ pub fn CreatePsJoystickWithCallbackParameterType(comptime T: type) type {
             if (!current_press_down_status and self.joystick_has_been_pressed_down) {
                 // Long press click: at least happen eight times
                 if (self.press_down_happened_amount >= 8) {
-                    if (self.config.long_press_callback) |callback| {
-                        callback(self.config.callback_param);
+                    if (self.config.long_press_callback) |long_press_callback| {
+                        long_press_callback(self.config.callback_param);
                     }
                 }
                 // Normal click: at least happen third times
                 else if (self.press_down_happened_amount >= 3) {
-                    if (self.config.normal_click_callback) |callback| {
-                        callback(self.config.callback_param);
+                    if (self.config.normal_click_callback) |normal_click_callback| {
+                        normal_click_callback(self.config.callback_param);
                     }
                 }
                 // Touch click: at least happen once
                 else if (self.press_down_happened_amount >= 1) {
-                    if (self.config.touch_click_callback) |callback| {
-                        callback(self.config.callback_param);
+                    if (self.config.touch_click_callback) |touch_click_callback| {
+                        touch_click_callback(self.config.callback_param);
                     }
                 }
 
