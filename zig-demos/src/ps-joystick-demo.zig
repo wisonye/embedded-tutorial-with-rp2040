@@ -24,24 +24,33 @@ const Game = struct {
     }
 };
 
-fn long_press_callback(data: *const Game) void {
+fn long_press_callback(data: ?*const Game) void {
     _ = c.printf(
         "\n>>> long_press_callback, data (game name): %s",
-        @as([*]const u8, @ptrCast(data.get_name())),
+        if (data) |d|
+            @as([*]const u8, @ptrCast(d.get_name()))
+        else
+            "NULL",
     );
 }
 
-fn normal_click_callback(data: *const Game) void {
+fn normal_click_callback(data: ?*const Game) void {
     _ = c.printf(
         "\n>>> normal_click_callback, data (game name): %s",
-        @as([*]const u8, @ptrCast(data.get_name())),
+        if (data) |d|
+            @as([*]const u8, @ptrCast(d.get_name()))
+        else
+            "NULL",
     );
 }
 
-fn touch_click_callback(data: *const Game) void {
+fn touch_click_callback(data: ?*const Game) void {
     _ = c.printf(
         "\n>>> touch_click_callback, data (game name): %s",
-        @as([*]const u8, @ptrCast(data.get_name())),
+        if (data) |d|
+            @as([*]const u8, @ptrCast(d.get_name()))
+        else
+            "NULL",
     );
 }
 
@@ -62,32 +71,31 @@ export fn main() c_int {
     const my_game = Game{
         ._name = "My fun game:)",
     };
-    _ = my_game;
-
-    // var joystick = MyPsJoyStick.init(.{
-    //     .x_axis_pin = null,
-    //     .y_axis_pin = null,
-    //     .z_axis_pin = null,
-    //     .long_press_callback = long_press_callback,
-    //     .normal_click_callback = normal_click_callback,
-    //     .touch_click_callback = touch_click_callback,
-    //     .callback_param = &my_game,
-    //     .debug_print_type = MyPsJoyStick.DebugPrintType.Data,
-    // });
 
     var joystick = MyPsJoyStick.init(.{
-        .x_axis_pin = 10,
-        .y_axis_pin = 11,
-        .z_axis_pin = 12,
-        .long_press_callback = null,
-        .normal_click_callback = null,
-        .touch_click_callback = null,
-        .callback_param = null,
-        .debug_print_type = MyPsJoyStick.DebugPrintType.Bar,
+        .x_axis_pin = null,
+        .y_axis_pin = null,
+        .z_axis_pin = null,
+        .long_press_callback = long_press_callback,
+        .normal_click_callback = normal_click_callback,
+        .touch_click_callback = touch_click_callback,
+        .callback_param = &my_game,
+        .debug_print_type = MyPsJoyStick.DebugPrintType.Data,
     });
-    _ = joystick;
+
+    // var joystick = MyPsJoyStick.init(.{
+    //     .x_axis_pin = 10,
+    //     .y_axis_pin = 11,
+    //     .z_axis_pin = 12,
+    //     .long_press_callback = null,
+    //     .normal_click_callback = null,
+    //     .touch_click_callback = null,
+    //     .callback_param = null,
+    //     .debug_print_type = MyPsJoyStick.DebugPrintType.Bar,
+    // });
 
     while (true) {
+        _ = joystick.update_status();
         c.sleep_ms(10);
     }
 }
