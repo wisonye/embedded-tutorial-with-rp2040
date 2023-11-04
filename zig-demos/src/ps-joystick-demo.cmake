@@ -41,3 +41,8 @@ target_compile_definitions(
 #
 pico_enable_stdio_usb(ps-joystick-demo 1)
 pico_enable_stdio_uart(ps-joystick-demo 0)
+
+#
+# Floating-point support
+#
+pico_set_float_implementation(ps-joystick-demo "pico")
