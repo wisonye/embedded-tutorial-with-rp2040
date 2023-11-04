@@ -323,7 +323,8 @@ pub fn build(b: *std.Build) anyerror!void {
         "\n[ Available demo build commands ]\n\n" ++
             "zig-blink-builtin-led\n" ++
             "zig-blink-register\n" ++
-            "touch-switch-button-demo\n",
+            "touch-switch-button-demo\n" ++
+            "ps-joystick-demo\n",
     });
     const default_step = b.step("help", "Show usage");
     default_step.dependOn(&usage_echo_command.step);
@@ -363,6 +364,18 @@ pub fn build(b: *std.Build) anyerror!void {
         "TouchSwitchButton driver demo.",
         "src/touch-switch-button-demo.zig",
         "touch-switch-button-demo",
+        rp2040_target,
+        optimize,
+        build_options,
+    );
+
+    try create_build_step(
+        b,
+        pico_sdk_path,
+        "ps-joystick-demo",
+        "PS Joystick driver demo.",
+        "src/ps-joystick-demo.zig",
+        "ps-joystick-demo",
         rp2040_target,
         optimize,
         build_options,
