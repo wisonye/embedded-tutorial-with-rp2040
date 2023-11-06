@@ -8,7 +8,7 @@ There are two kinds of memory inside the MCU:
 
 - Data memory (SRAM)
 
-    It's used to hold all runtime data, its content will be lost after power-off, the same behavior as your DRAM. Usually, it has a high speed (compared to Flash) and only counts in =KB/MB=.
+    It's used to hold all runtime data, its content will be lost after power-off, the same behavior as your DRAM. Usually, it has a higher speed (compared to the Flash) and only counts in =KB/MB=.
 
 
 ** ARM Cortex M
@@ -34,69 +34,88 @@ There are two kinds of memory inside the MCU:
 #+END_SRC
 
 
-The =ARM Cortex-M3/M4/M7= microprocessors are =Harvard computer architecture=, and the instruction memory (flash) and the data memory (SRAM) are built into the processor chip.
+The =ARM Cortex-M3/M4/M7= MCUs are =Harvard computer architecture=, and the instruction memory (flash) and the data memory (SRAM) are built into the processor chip.
 
 
 ** RP2040
 
 #+BEGIN_SRC text
-       |   |   |   |   |   |   |   |   |   |   |   
-     /--------------------------------------------\
-  -- |                                            | --
-     |  /------------\            /------------\  |
-  -- |  | Cortex-M0+ |            | Cortex-M0+ |  | --
-     |  |   Core-0   |            |   Core-1   |  |
-  -- |  \------------/            \------------/  | --
-     |        ^                          ^        |
-     |        |                          |        |
-     |        v                          v        |
-  -- |  ----------------------------------------- | --
-     |  |              BUS Fabric               | |
-  -- |  ----------------------------------------- | --
-     |         ^           ^           ^          |
-     |         |           |           |          |
-     |         v           |           v          |
-  -- |    /----------\     |     /------------\   | --
-     |    | 16KB ROM |     |     | 264KB SRAM |   |
-  -- |    \----------/     |     \------------/   | --
-     |                     |                      |
-     \---------------------|----------------------/
-        |   |   |   |   |  ||   |   |   |   |   |
-                           |
-                           |
-                           | QSPI
-                           |
-                           |
-           /---------------------------------\
-           |             PICO W              |
-           |   2MB External onboard Flash    |
-           |      ( Winbond W25Q16JV )       |
-           \---------------------------------/
+        |   |   |   |   |   |   |   |   |   |   |   
+      /---------------------------------------------\
+   -- |                                             | --
+      |  /------------\            /------------\   |
+   -- |  | Cortex-M0+ |            | Cortex-M0+ |   | --
+      |  |   Core-0   |            |   Core-1   |   |
+   -- |  \------------/            \------------/   | --
+      |        ^                          ^         |
+   -- |        |                          |         | --
+      |        v                          v         |
+   -- |  -----------------------------------------  | --
+      |  |              BUS Fabric               |  |
+   -- |  -----------------------------------------  | --
+      |        ^          ^          ^        ^     |
+   -- |        |          |          |        |     | --
+      |        v          v          v        v     |
+   -- |    /-------\  /-------\  /-------\ /-----\  | --
+      |    | 16KB  |  | 264KB |  | 16KB  | | 4KB |  |
+   -- |    |  ROM  |  | SRAM  |  | XIP/  | | USB |  | --
+      |    \-------/  \-------/  | Cache | \-----/  |
+   -- |                          \-------/          | --
+      |                              |              |
+      |               \------------------------/    |
+      |                  Total 284KB |              |
+      |                   on-chip    |              |
+      |                    SRAM      |              |
+      |                              |              |
+      \------------------------------|--------------/
+         |   |   |   |   |   |   |   |   |   |   |
+                                     |
+                                     | QSPI
+                                     |
+            /---------------------------------\
+            |             PICO W              |
+            |   2MB External onboard Flash    |
+            |      ( Winbond W25Q16JV )       |
+            \---------------------------------/
 #+END_SRC
 
 
-The =RP2040= has 264kB in-chip =SRAM= but doesn't have in-chip =Flash=. Instead, it support for up to 16MB of off-chip Flash memory and access via =QSPI= bus.
+The =RP2040= has 264kB in-chip =SRAM= but doesn't have in-chip =Flash=. Instead, it supports for up to 16MB of off-chip Flash memory and access via =QSPI= bus.
 
 #+html: <p align="center"><img src="tutorial/tutorial-images/2mb-flash-pico-w.png" /></p>
 #+ATTR_HTML: :width 50%
 [[file:tutorial-images/2mb-flash-pico-w.png]]
 
 
-*** 16KB ROM
+*** 16KB ROM is at address =0x00000000=
 
 The 16KB =ROM= contents are fixed at the time the silicon is manufactured. It contains:
 
 • Initial startup routine
 • Flash boot sequence
 • Flash programming routines
-• USB mass storage device with UF2 support • Utility libraries such as fast floating point
+• USB mass storage device with UF2 support
+• Utility libraries such as fast floating point implementation
+
+*** Total 284kB of on-chip SRAM
+
+There are no restrictions on what is stored in that total 284KB on-chip SRAM, it can be processor code, data buffers, or a mixture, it's up to you!!!
+
+That said you're able to write your entire binary into SRAM instead of the 2MB flash!!!
+
+**** 264KB SRAM is mapped to system addresses starting at =0x20000000=
+
+There is a total of 264kB of on-chip SRAM. Physically this is partitioned into six banks (six small pieces of them), as this vastly improves memory bandwidth for multiple masters, but software may treat it as a single 264kB memory region.
 
 
-*** 264KB SRAM
+**** 16KB extra SRAM is at =0x15000000=
 
-There is a total of 264kB of on-chip SRAM. Physically this is partitioned into six banks, as this vastly improves memory bandwidth for multiple masters, but software may treat it as a single 264kB memory region.
+If flash =XIP= caching is disabled, the cache becomes available as a 16kB memory
 
-There are no restrictions on what is stored in each bank: processor code, data buffers, or a mixture.
+
+**** 4KB extra SRAM is at =0x50100000=
+
+If the =USB= is not used, the USB data DPRAM can be used as a 4kB memory
 
 
 *** 2MB (Up to 16MB) external flash storage
