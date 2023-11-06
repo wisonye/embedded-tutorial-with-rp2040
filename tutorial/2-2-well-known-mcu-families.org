@@ -1,34 +1,17 @@
-* What is =MCU=, =SOC= and =SBC=?
+* =ARM-Cortex-M=, =STM32= and =RP2040= MCUs
 
-- =MCU= stands for =Microcontroller Unit=.
-- =SOC= stands for =System-on-chip=.
-- =SBC= stands for =Single Board Computer=.
-
-Summaries, =MCU= and =SOC= sound like the same thing which is an all-in-one chip. It includes all the following hardware components inside a single chip:
-
-- CPU (even FPU)
-- RAM (Random Access Memory)
-- ROM (Read-only Memory)
-- Flash (non-volatile RAM, like the hard drive to store your program)
-- Any related I/O
-
-It's basically a very small computer on an =IC= (integrated circuit) or microchip. Compare to =SBC=, it has the following differences:
-
-- =MCU= usually with limited hardware power resources which suit for non-heavy computation solution.
-
-- =MCU= can deal with fast power on and off (or power-off accidentally) at any given time and it won't hurt your program which =SBC= can't do like that (as it got =OS= on it).
-
-- =MCU= doesn't have =OS= at all (even if you use =FreeRTOS=, it actually just a task scheduler), your program will be the **only** one program running there with full control and real-time responsiveness.
-
-
-** =ARM-Cortex-M=, =STM32= and =RP2040= MCUs
-
-*** =ARM-Cortex-M=
+** =ARM-Cortex-M=
 
 The =ARM Cortex-M= is a group of =32-bit RISC ARM processor cores= licensed by =ARM Limited=. These cores are optimized for low-cost and energy-efficient integrated circuits, which have been embedded in tens of billions of consumer devices.[1] Though they are most often the main component of microcontroller chips, sometimes they are embedded inside other types of chips too.
 
+=ARM Cortex-M= has three groups:
 
-*** =STM32=
+• Cortex-M series for microcontrollers (=M= stands for microcontroller)
+• Cortex-R series for real-time embedded systems (=R= stands for real-time)
+• Cortex-A series for high-performance applications (=A= stands for application)
+
+
+** =STM32=
 
 =STM32= is a family of *32-bit* =MCU= by =STMicroelectronics=. The =STM32= chips are grouped into related series that are based around the same *32-bit* ARM processor core, such as:
 
@@ -46,7 +29,7 @@ Internally, each =MCU= consists of the processor core, static RAM, flash memory,
 The company behind the =ARM= trademark (=Arm Holdings=) doesn't actually manufacture chips for purchase. Instead, their primary business model is to just design parts of chips. They will then license those designs to manufacturers, who will in turn implement the designs (perhaps with some of their own tweaks) in the form of physical hardware that can then be sold.
 
 
-*** =RP2040=
+** =Raspberry Pi RP2040=
 
 =RP2040= is the debut microcontroller from =Raspberry Pi=. It brings our signature values of high performance, low cost, and ease of use to the microcontroller space.
 
@@ -118,4 +101,3 @@ Silicon options:
 - Vector table relocation (same as M3, M4)
 - Single-cycle I/O port (available in M0+/M23)
 - Micro Trace Buffer (MTB) (available in M0+/M23/M33/M35P)
-

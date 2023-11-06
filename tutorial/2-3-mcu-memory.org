@@ -1,0 +1,106 @@
+* MCU Memory
+
+There are two kinds of memory inside the MCU:
+
+- Instruction memory (Flash)
+
+    It's used to store your program binary (machine code) and extra data files (image, audio, even video), its content won't lost after power-off, same behavior as your hard drive/SSD. Usually, it has a lower speed and bigger size like =GB=.
+
+- Data memory (SRAM)
+
+    It's used to hold all runtime data, its content will be lost after power-off, the same behavior as your DRAM. Usually, it has a high speed (compared to Flash) and only counts in =KB/MB=.
+
+
+** ARM Cortex M
+
+#+BEGIN_SRC text
+      |   |   |   |   |   |   |   |   |   |   |   |   |
+     /--------------------------------------------------\
+  -- |                                                  | --
+     |                               /-------------\    |
+  -- |                     /--       | Instruction |    | --
+     |                     | | <---> |   Memory    |    |
+  -- | /----------\        | |       |   (Flash)   |    | --
+     | | Cortex-M |        | |       \-------------/    |
+  -- | | Processor| <-->   | |                          | --
+     | | Core     |        | |       /-------------\    |
+  -- | \----------/        | | <---> |    Data     |    | --
+     |                     \--       |   Memory    |    |
+  -- |                               |   (SRAM)    |    | --
+     |                               \-------------/    |
+  -- |                                                  | --
+     \--------------------------------------------------/
+      |   |   |   |   |   |   |   |   |   |   |   |   |
+#+END_SRC
+
+
+The =ARM Cortex-M3/M4/M7= microprocessors are =Harvard computer architecture=, and the instruction memory (flash) and the data memory (SRAM) are built into the processor chip.
+
+
+** RP2040
+
+#+BEGIN_SRC text
+       |   |   |   |   |   |   |   |   |   |   |   
+     /--------------------------------------------\
+  -- |                                            | --
+     |  /------------\            /------------\  |
+  -- |  | Cortex-M0+ |            | Cortex-M0+ |  | --
+     |  |   Core-0   |            |   Core-1   |  |
+  -- |  \------------/            \------------/  | --
+     |        ^                          ^        |
+     |        |                          |        |
+     |        v                          v        |
+  -- |  ----------------------------------------- | --
+     |  |              BUS Fabric               | |
+  -- |  ----------------------------------------- | --
+     |         ^           ^           ^          |
+     |         |           |           |          |
+     |         v           |           v          |
+  -- |    /----------\     |     /------------\   | --
+     |    | 16KB ROM |     |     | 264KB SRAM |   |
+  -- |    \----------/     |     \------------/   | --
+     |                     |                      |
+     \---------------------|----------------------/
+        |   |   |   |   |  ||   |   |   |   |   |
+                           |
+                           |
+                           | QSPI
+                           |
+                           |
+           /---------------------------------\
+           |             PICO W              |
+           |   2MB External onboard Flash    |
+           |      ( Winbond W25Q16JV )       |
+           \---------------------------------/
+#+END_SRC
+
+
+The =RP2040= has 264kB in-chip =SRAM= but doesn't have in-chip =Flash=. Instead, it support for up to 16MB of off-chip Flash memory and access via =QSPI= bus.
+
+#+html: <p align="center"><img src="tutorial/tutorial-images/2mb-flash-pico-w.png" /></p>
+#+ATTR_HTML: :width 50%
+[[file:tutorial-images/2mb-flash-pico-w.png]]
+
+
+*** 16KB ROM
+
+The 16KB =ROM= contents are fixed at the time the silicon is manufactured. It contains:
+
+• Initial startup routine
+• Flash boot sequence
+• Flash programming routines
+• USB mass storage device with UF2 support • Utility libraries such as fast floating point
+
+
+*** 264KB SRAM
+
+There is a total of 264kB of on-chip SRAM. Physically this is partitioned into six banks, as this vastly improves memory bandwidth for multiple masters, but software may treat it as a single 264kB memory region.
+
+There are no restrictions on what is stored in each bank: processor code, data buffers, or a mixture.
+
+
+*** 2MB (Up to 16MB) external flash storage
+
+External Flash is accessed via the =QSPI= interface using the execute-in-place (XIP) hardware. This allows an external flash memory to be addressed and accessed by the system as though it were internal memory.
+
+=Execute In Place (XIP)= is a method of executing programs directly from long-term storage rather than copying it into RAM.

@@ -1,0 +1,22 @@
+* What is =MCU=, =SOC= and =SBC=?
+
+- =MCU= stands for =Microcontroller Unit=.
+- =SOC= stands for =System-on-chip=.
+- =SBC= stands for =Single Board Computer=.
+
+Summaries, =MCU= and =SOC= sound like the same thing which is an all-in-one chip. It includes all the following hardware components inside a single chip:
+
+- CPU (even FPU)
+- RAM (Random Access Memory)
+- ROM (Read-only Memory)
+- Flash (non-volatile RAM, like the hard drive to store your program)
+- Any related I/O
+
+It's basically a very small computer on an =IC= (integrated circuit) or microchip. Compare to =SBC=, it has the following differences:
+
+- =MCU= usually with limited hardware power resources which suit for non-heavy computation solution.
+
+- =MCU= can deal with fast power on and off (or power-off accidentally) at any given time and it won't hurt your program which =SBC= can't do like that (as it got =OS= on it).
+
+- =MCU= doesn't have =OS= at all (even if you use =FreeRTOS=, it actually just a task scheduler), your program will be the **only** one program running there with full control and real-time responsiveness.
+

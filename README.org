@@ -1,14 +1,14 @@
 * All-in-one Embedded Tutorial With =Raspberrypi RP2040 MCU=
 
-In this tutorial, we will cover all the pieces of knowledge we need to know for using =C= and =Zig= to do embedded programming.
+In this tutorial, we will cover all the pieces of knowledge we need to know for using =C, Zig and ARM assembly= to do embedded programming.
 
 Although we're targeting the =RP2040 MCU=, in fact, we still need an MCU board that has the =RP2040= to run all demo codes. That's why we pick the =Raspberrypi Pico-W= as our target board to run all the demos.
 
 ** The major purposes of this tutorial: 
 
-1. Learn the fundamental concepts and knowledge for embedded programming from scratch, what we've learned is NOT limited to Raspberry Pi RP2040 MCU, actually, it benefits all MCUs as well1.
+1. Learn the fundamental concepts and knowledge for embedded programming from scratch, what we've learned is NOT limited to Raspberry Pi RP2040 MCU, actually, it benefits all MCUs as well.
 
-2. The real-world demo to show how to use =C= and =Zig= in embedded programming.
+2. The real-world demo to show how to use =C, Zig and ARM assembly= in embedded programming.
 
 3. How to mix =Zig= and =C= in low-level hardware development.
 
@@ -96,7 +96,15 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
 [[file:tutorial/1-glossary-of-terms.org][1. Glossary of terms]]
 
-[[file:tutorial/2-basic-concepts.org][2. Basic concepts]]
+2. Basic concepts
+
+   2.1 [[file:tutorial/2-1-basic-concepts.org][What is MCU, SOC and SBC]]
+
+   2.2 [[file:tutorial/2-2-well-known-mcu-families.org][Well-known MCU families]]
+
+   2.3 [[file:tutorial/2-3-mcu-memory.org][MCU memory]]
+
+   2.4 Memory layout
 
 3. Install tooling
 

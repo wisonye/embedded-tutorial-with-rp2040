@@ -11,6 +11,7 @@
 | =ARM=                 | Advanced RISC Machines (originally Acorn RISC Machine), [[https://en.wikipedia.org/wiki/ARM_architecture_family][wiki-link]]            |
 | =RISC=                | Reduced Instruction Set Computer, [[https://en.wikipedia.org/wiki/Reduced_instruction_set_computer][wiki-link]]                                  |
 | =CISC=                | Complex Instruction Set Computer, [[https://en.wikipedia.org/wiki/Complex_instruction_set_computer][wiki-link]]                                  |
+| =ISA=                 | Instruction Set Architecture, [[https://en.wikipedia.org/wiki/Instruction_set_architecture][wiki-link]]                                      |
 | =Thumb=               | ARM CPU instruction set                                                      |
 | =Thumb-2=             | ARM CPU instruction set                                                      |
 |                     |                                                                              |
