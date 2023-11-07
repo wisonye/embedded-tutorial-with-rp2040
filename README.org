@@ -104,7 +104,7 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
    2.3 [[file:tutorial/2-3-mcu-memory.org][MCU memory (very important)]]
 
-   2.4 Memory layout (very important)
+   2.4 [[file:tutorial/2-4-memory-layout.org][Memory layout (very important)]]
 
 3. Install tooling
 
@@ -129,6 +129,8 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
    5.2 [[file:tutorial/5-2-a-how-printf-print-to-usb-and-uart.org][How the ~printf~ actually print to USB and UART]]
 
    5.3 [[file:tutorial/5-3-a-solve-losing-printf-content.org][Solve the losing ~printf~ content after ~stdio_init_all();~ call]]
+
+   5.4 [[file:c-demos/cmake-build-process.org][How =cmake= build your pico program]]
 
 6. SPI (Serial Peripheral Interface)
 
