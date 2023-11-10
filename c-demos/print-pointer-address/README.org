@@ -1,4 +1,4 @@
-* Blinking LED via =CYW43_WL_GPIO_LED_PIN=
+* Print the =SP (Stack Pointer)= and =PC (Program Counter)= pointer address demo
 
 ** How to configure
 
@@ -39,10 +39,10 @@ Then run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the 
 
 #+BEGIN_SRC bash
   # For linux
-  doas ./flash_linux.sh blinking-led
+  doas ./flash_linux.sh print-pointer-address
 
   # For macos
-  ./flash_macos.sh blinking-led
+  ./flash_macos.sh print-pointer-address
 #+END_SRC
 
 
@@ -51,21 +51,17 @@ Then run ~./flash_linux.sh~ or ~/.flash_macos.sh~ script, it will print out the 
 Run ~./minicom.sh~ script, it will print out the usage and example if you don't provide any parameter.
 
 #+BEGIN_SRC bash
-  Welcome to minicom 2.8
+  # Welcome to minicom 2.8
 
-  OPTIONS:
-  Compiled on Jan  4 2021, 00:04:46.
-  Port /dev/tty.usbmodem145201, 10:28:40
+  # OPTIONS:
+  # Compiled on Jan  4 2021, 00:04:46.
+  # Port /dev/tty.usbmodem14301, 15:16:36
 
-  Press Meta-Z for help on special keys
+  # Press Meta-Z for help on special keys
 
-  [ Blinking LED Demo ]
-  WFI LED is on: true
-  WFI LED is on: false
-  WFI LED is on: true
-  WFI LED is on: false
-  WFI LED is on: true
-  .... (ignore the same output)
+  >>> [ Print Pointer Address Demo]
+  >>> Program counter pointer address: 0x1000031A
+  >>> Stack pointer address: 0x20041FF4
 #+END_SRC
 
 BTW, the ~Meta-Z~ doesn't work on =MacOS + Alacritty= at this moment. So, =kill minicom= is my way to exit the =minicom= program.

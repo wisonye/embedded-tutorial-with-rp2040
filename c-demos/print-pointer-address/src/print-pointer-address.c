@@ -7,7 +7,7 @@
 ///
 void print_stack_ptr(void) {
     void *p = NULL;
-    printf("\n>>> Stack pointer address: %p", (void *)&p);
+    printf("\n>>> Stack pointer address: 0x%p", (void *)&p);
 }
 
 ///
@@ -34,7 +34,7 @@ int main(void) {
     printf("\n>>> [ Print Pointer Address Demo]");
 
 	void *pc_ptr = get_program_counter_ptr();
-	printf("\n>>> Program counter pointer address: %p", pc_ptr);
+	printf("\n>>> Program counter pointer address: 0x%p", pc_ptr);
 
 	print_stack_ptr();
 

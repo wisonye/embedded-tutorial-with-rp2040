@@ -5,39 +5,39 @@ Your program will be compiled as the =ELF (Executable and Linkable Format)=, the
 The processor must load the instructions and data of your (machine code) program into data memory (SRAM) before the program starts to run. That leads you to the next concept of =Memory (mapping) Layout=.
 
 #+BEGIN_SRC text
-
-                    Memory Layout                               SRAM Runtime Layout
-   ------------------------------------------                  ---------------------
-  |                                          |                |                     |
-
-
-
-             | <---- 32 bit (4 bytes) ----> |                                         
-  0xFFFFFFFF --------------------------------                                           
-                                                                -  ******************  - SRAM end
-                                                               |         stack
-                                                               |   ******************                 
-                                                               |           |                            
-             Reserved                                          |           v
-                                                               |                                        
-                                                               |           ^
-                                                       ------> |           |                            
-                                                      |        |   ******************                 
-             --------------------------------         |        |          heap
-             Cortex-M0+ internal registers            |        |   ******************
-  0xE0000000 --------------------------------         |        |   uninitialized data
-             IOPORT Registers                         |        |       .bss
-  0xD0000000 --------------------------------         |        |   ******************
-             AHB-Lite Peripherals                     |        |   initialized data
-  0x50000000 --------------------------------         |        |       .data 
-             APB Peripherals                          |         -  ****************** - SRAM start
-  0x40000000 --------------------------------         |    --> |       .text
-             SRAM (Data memory)               --------    |     -  ******************
-  0x20000000 --------------------------------             |         
-             XIP (Flash, Instruction memory)  ------------                      
-  0x10000000 --------------------------------                       
-             ROM                                                    
-  0x00000000 --------------------------------                       
+                                                    |
+                 Memory Layout                      |               SRAM Runtime
+                   Overview                         |              Memory  Layout
+   ==========================================       |          =====================
+  /                                          \      |         /                     \
+                                                    |
+                                                    |
+             | <---- 32 bit (4 bytes) ----> |       |                                 
+  0xFFFFFFFF --------------------------------       |                                   
+                                                    |          /-  ******************  - SRAM end
+                                                    |          |         stack
+                                                    |          |   ******************                 
+                                                    |          |           |                            
+             Reserved                               |          |           v
+                                                    |          |                                        
+                                                    |          |           ^
+                                                    |   /----> |           |                            
+                                                    |   |      |   ******************                 
+             --------------------------------       |   |      |          heap
+             Cortex-M0+ internal registers          |   |      |   ******************
+  0xE0000000 --------------------------------       |   |      |   uninitialized data
+             IOPORT Registers                       |   |      |       .bss
+  0xD0000000 --------------------------------       |   |      |   ******************
+             AHB-Lite Peripherals                   |   |      |   initialized data
+  0x50000000 --------------------------------       |   |      |       .data 
+             APB Peripherals                        |   |      \-  ****************** - SRAM start
+  0x40000000 --------------------------------       |   |      /-
+             SRAM (Data memory)               ------|---/ /--> |       .text/code
+  0x20000000 --------------------------------       |     |    \-  ******************
+             XIP (Flash, Instruction memory)  ------|-----/                           
+  0x10000000 --------------------------------       |
+             ROM                                    |
+  0x00000000 --------------------------------       |
 #+END_SRC
 
 The above diagram is the =RP2040= address map, with the lower address at the bottom, and the higher address at the top, let's break it down and understand it step-by-step:
@@ -45,9 +45,9 @@ The above diagram is the =RP2040= address map, with the lower address at the bot
 
 ** How to read the above digram
 
-The left  part is the =RP2040= memory layout described in its datasheet, I just visualized it.
+The left part is the =RP2040= memory layout described in its datasheet, I just visualized it.
 
-The right part is the SRAM (data memory) runtime layout, the typical layout of a simple computer's program memory with following sections/segmentations:
+The right part is the SRAM (data memory) runtime layout (the memory layout when your program is running), the typical layout of a simple computer's program memory with following sections/segmentations:
 
 | Section | Description                                                                       |
 |---------+-----------------------------------------------------------------------------------|
@@ -57,7 +57,7 @@ The right part is the SRAM (data memory) runtime layout, the typical layout of a
 | Data    | Contains global or static variables that the program gives some initial values    |
 | Text    | Contains executable code and is generally read-only and fixed size                |
 
-As you can see all those memory sections are living inside the SRAM (the physical RAM) except the =text/code= section is mapped to the Flash (XIP doesn't need to load code into RAM).
+As you can see all those memory sections are living inside the SRAM (the physical on-chip data memory) except the =text/code= section is mapped to the Flash (instruction memory), as =XIP= doesn't need to load code into RAM.
 
 Also, the =heap= and the =stack= at the opposite end of a memory region, and they grow in different directions: the stack starts from the top, and the heap starts from the bottom. Variables are dynamically allocated or removed from the heap or stack, the size of the heap and stack changes at runtime. The heap grows up toward the large memory address, and the stack grows down toward the small memory address. Growing in opposite directions allows the heap and stack to take full advantage of the free memory region. When the stack meets the heap, free memory space is exhausted.
 
@@ -96,17 +96,18 @@ So, I created a very simple C program to print the =pc (Program Counter)= and =s
 Here is the result it prints out:
 
 #+BEGIN_SRC bash
-  Welcome to minicom 2.8
+  # Welcome to minicom 2.8
 
-  OPTIONS:
-  Compiled on Jan  4 2021, 00:04:46.
-  Port /dev/tty.usbmodem14301, 15:16:36
+  # OPTIONS:
+  # Compiled on Jan  4 2021, 00:04:46.
+  # Port /dev/tty.usbmodem14301, 15:16:36
 
-  Press Meta-Z for help on special keys
+  # Press Meta-Z for help on special keys
 
   >>> [ Print Pointer Address Demo]
-  >>> Program counter pointer address: 1000031A
-  >>> Stack pointer address: 20041FF4
+  >>> Program counter pointer address: 0x1000031A
+  >>> Stack pointer address: 0x20041FF4
 #+END_SRC
 
 As you can see the stack pointer address is =0x20041FF4=, it's only 12 bytes (0x20042000 - 0x20041FF4 = 12) below the SRAM end address:)
+
