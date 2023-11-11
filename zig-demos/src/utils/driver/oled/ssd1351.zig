@@ -29,6 +29,7 @@
 //!     has been fully transferred.
 //!
 const std = @import("std");
+const build_options = @import("build_options");
 const print = std.debug.print;
 const font_12x16 = @import("font12x16.h");
 const font_16x16 = @import("font16x16.h");
@@ -74,11 +75,32 @@ pub const spi0 = spi0_hw;
 pub const spi1 = spi1_hw;
 // -----------------------------------------------------------------------------------
 
-const SSD1351_DEFAULT_SPI_GROUP = spi0; // SPI Group
-const SSD1351_DEFAULT_SPI_DC = 21; // Data/Command
-const SSD1351_DEFAULT_SPI_RST = 20; // RESET
-const SSD1351_DEFAULT_SPI_SCK = 18; // SPI Clock
-const SSD1351_DEFAULT_SPI_DATA = 19; // SPI Data
+const SSD1351_DEFAULT_SPI_GROUP = spi0; // SPI Group, either SPI0 or SPI1
+
+// -----------------------------------------------------------------------------------
+//
+// SSD1351 OLED 128×128 pins:
+//
+// GND: Ground pin
+//
+// VCC: +3.3v pin
+//
+// SCL: SPI Clock, connect to PICO's SPI_SCK
+//
+// SDA: SPI Data, connect to PICO's SPI_TX (MOSI)
+//
+// RES: Reset pin, connect to any GPIO OUTPUT pin, set low to reset
+//
+// DC:  Data / Command pin, connect to any GPIO OUTPUT pin.
+//      set low for a command being sent and high for data being sent
+//
+// CS:  Chip select pin, short to ground, otherwise, it ingores the data!!!
+//
+const SSD1351_DEFAULT_DATA_COMMAND_PIN = 21;
+const SSD1351_DEFAULT_RESET_PIN = 20;
+const SSD1351_DEFAULT_SPI_CLOCK_PIN = 18;
+const SSD1351_DEFAULT_SPI_TX_PIN = 19;
+// -----------------------------------------------------------------------------------
 
 ///
 /// SSD1351 OLED 128×128 pixels, 1.5″ in size.
@@ -194,10 +216,10 @@ pub const SSD1351 = struct {
         fps_color: u16,
         spi_group: [*c]c.spi_hw_t,
         spi_baudrate: u32,
-        spi_dc: u32,
-        spi_rst: u32,
-        spi_sck: u32,
-        spi_data: u32,
+        data_and_command_pin: u32,
+        reset_pin: u32,
+        spi_clock_pin: u32,
+        spi_tx_pin: u32,
     };
 
     const Self = @This();
@@ -236,16 +258,16 @@ pub const SSD1351 = struct {
     ///
     pub fn init(config: ?Config) Self {
         const dma_tx_result: u32 = @intCast(c.dma_claim_unused_channel(true));
-        return Self{
+        const me: Self = .{
             .config = .{
                 .show_fps = if (config) |con| con.show_fps else false,
-                .fps_color = if (config) |con| con.fps_color else 0xFFFF,
+                .fps_color = if (config) |con| con.fps_color else 0xB1D2, // 0xFFFF,
                 .spi_group = if (config) |con| con.spi_group else SSD1351_DEFAULT_SPI_GROUP,
                 .spi_baudrate = if (config) |con| con.spi_baudrate else SSD1351_DEFAULT_SPI_SPEED,
-                .spi_dc = if (config) |con| con.spi_dc else SSD1351_DEFAULT_SPI_DC,
-                .spi_rst = if (config) |con| con.spi_rst else SSD1351_DEFAULT_SPI_RST,
-                .spi_sck = if (config) |con| con.spi_sck else SSD1351_DEFAULT_SPI_SCK,
-                .spi_data = if (config) |con| con.spi_data else SSD1351_DEFAULT_SPI_DATA,
+                .data_and_command_pin = if (config) |con| con.data_and_command_pin else SSD1351_DEFAULT_DATA_COMMAND_PIN,
+                .reset_pin = if (config) |con| con.reset_pin else SSD1351_DEFAULT_RESET_PIN,
+                .spi_clock_pin = if (config) |con| con.spi_clock_pin else SSD1351_DEFAULT_SPI_CLOCK_PIN,
+                .spi_tx_pin = if (config) |con| con.spi_tx_pin else SSD1351_DEFAULT_SPI_TX_PIN,
             },
             ._oled_dma_1 = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
             ._oled_dma_2 = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
@@ -254,6 +276,33 @@ pub const SSD1351 = struct {
             ._dma_config = c.dma_channel_get_default_config(dma_tx_result),
             ._timer = null,
         };
+
+        if (build_options.enable_debug_log) {
+            const show_fps_str = if (me.config.show_fps) "True" else "False";
+            const spi_group_str = if (me.config.spi_group == spi0) "SPI0" else "SPI1";
+            _ = c.printf(
+                "\n>>> [ OLED-SSD1351 > init ] - {" ++
+                    "\n\tfps_color: 0x%X" ++
+                    "\n\tshow_fps: %s" ++
+                    "\n\tspi_group: %s" ++
+                    "\n\tspi_baudrate: %d" ++
+                    "\n\tspi_clock_pin: GPIO_%d" ++
+                    "\n\tspi_tx_pin: GPIO_%d" ++
+                    "\n\tdata_and_command_pin: GPIO_%d" ++
+                    "\n\treset_pin: GPIO_%d" ++
+                    "\n}\n",
+                me.config.fps_color,
+                @as([*]const u8, @ptrCast(show_fps_str)),
+                @as([*]const u8, @ptrCast(spi_group_str)),
+                me.config.spi_baudrate,
+                me.config.spi_clock_pin,
+                me.config.spi_tx_pin,
+                me.config.data_and_command_pin,
+                me.config.reset_pin,
+            );
+        }
+
+        return me;
     }
 
     ///

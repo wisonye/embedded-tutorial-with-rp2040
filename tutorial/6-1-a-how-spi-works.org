@@ -14,8 +14,8 @@ There are 4 pins/lines conntected between the =RP2040= and the SPI peripheral:
 
 - =SLCK=: SPI clock
 - =CSn=: Chip select
-- =MISO=: SPI Master (RP2040) In  Slave (Peripheral) Out, aka =SPI TX= (transmit)
-- =MOSI=: SPI Master (RP2040) Out Slave (Peripheral) In, aka =SPI RX= (receive)
+- =MISO=: SPI Master (RP2040) In  Slave (Peripheral) Out, aka =SPI RX= (receive)
+- =MOSI=: SPI Master (RP2040) Out Slave (Peripheral) In, aka =SPI TX= (transmit)
 
   When the transaction starts, The =SLCK= starts to generate the pulse and shift bit-by-bit from the mater register to the slave register over =MOSI= and shift bit-by-bit from the salve register to the master register over =MISO=. That's why they have to work in full-duplex mode (you have to send bits out from the register before you can receive the bits into the register)!!!
 
