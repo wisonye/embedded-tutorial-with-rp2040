@@ -230,8 +230,8 @@ pub const SSD1351 = struct {
     /// - One for display the current frame (finish drawing).
     /// - One for working on the next frame and flipping it when it's done.
     ///
-    _oled_dma_1: [SCREEN_HEIGHT * SCREEN_WIDTH * 2]u8,
-    _oled_dma_2: [SCREEN_HEIGHT * SCREEN_WIDTH * 2]u8,
+    _oled_dma_1_buffer: [SCREEN_HEIGHT * SCREEN_WIDTH * 2]u8,
+    _oled_dma_2_buffer: [SCREEN_HEIGHT * SCREEN_WIDTH * 2]u8,
 
     ///
     /// Buffered data to scroll into frame buffer
@@ -258,7 +258,7 @@ pub const SSD1351 = struct {
     ///
     pub fn init(config: ?Config) Self {
         const dma_tx_result: u32 = @intCast(c.dma_claim_unused_channel(true));
-        const me: Self = .{
+        var me: Self = .{
             .config = .{
                 .show_fps = if (config) |con| con.show_fps else false,
                 .fps_color = if (config) |con| con.fps_color else 0xB1D2, // 0xFFFF,
@@ -269,13 +269,29 @@ pub const SSD1351 = struct {
                 .spi_clock_pin = if (config) |con| con.spi_clock_pin else SSD1351_DEFAULT_SPI_CLOCK_PIN,
                 .spi_tx_pin = if (config) |con| con.spi_tx_pin else SSD1351_DEFAULT_SPI_TX_PIN,
             },
-            ._oled_dma_1 = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
-            ._oled_dma_2 = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
-            ._scroll_buffer = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
+            //
+            // DO NOT use this way to init, as it causes init in compile time, init data (96KB 0x00)
+            // will be added into the binary!!!
+            //
+            // ._oled_dma_1_buffer = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
+            // ._oled_dma_2_buffer = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
+            // ._scroll_buffer = .{0x00} ** (SCREEN_HEIGHT * SCREEN_WIDTH * 2),
+            ._oled_dma_1_buffer = undefined,
+            ._oled_dma_2_buffer = undefined,
+            ._scroll_buffer = undefined,
             ._dma_tx = dma_tx_result,
             ._dma_config = c.dma_channel_get_default_config(dma_tx_result),
             ._timer = null,
         };
+
+        //
+        // Run time init all buffers
+        //
+        for (0..(SCREEN_HEIGHT * SCREEN_WIDTH * 2)) |index| {
+            me._oled_dma_1_buffer[index] = 0x00;
+            me._oled_dma_2_buffer[index] = 0x00;
+            me._scroll_buffer[index] = 0x00;
+        }
 
         if (build_options.enable_debug_log) {
             const show_fps_str = if (me.config.show_fps) "True" else "False";
@@ -300,6 +316,19 @@ pub const SSD1351 = struct {
                 me.config.data_and_command_pin,
                 me.config.reset_pin,
             );
+
+            _ = c.printf("\n>>> [ OLED-SSD1351 > init ] - oled_dma1_buffer: ");
+            for (0..10) |index| {
+                _ = c.printf("0x%02X, ", me._oled_dma_1_buffer[index]);
+            }
+            _ = c.printf("\n>>> [ OLED-SSD1351 > init ] - oled_dma_2_buffer: ");
+            for (0..10) |index| {
+                _ = c.printf("0x%02X, ", me._oled_dma_2_buffer[index]);
+            }
+            _ = c.printf("\n>>> [ OLED-SSD1351 > init ] - scroll_buffer: ");
+            for (0..10) |index| {
+                _ = c.printf("0x%02X, ", me._scroll_buffer[index]);
+            }
         }
 
         return me;
