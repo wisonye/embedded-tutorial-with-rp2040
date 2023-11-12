@@ -35,6 +35,7 @@ const font_12x16 = @import("font12x16.h");
 const font_16x16 = @import("font16x16.h");
 const font_8x8 = @import("font8x8_basic.h");
 const font_8x8_topaz = @import("font8x8_topaz.h");
+const spi_bindings = @import("../../pico-sdk-bindings/spi.zig");
 
 const c = @cImport({
     @cInclude("hardware/dma.h");
@@ -47,35 +48,10 @@ const c = @cImport({
     @cInclude("string.h");
 });
 
-// -----------------------------------------------------------------------------------
 //
-// zig-translate causes the following compile error:
+// SPI Group, either SPI0 or SPI1
 //
-// error: C pointers cannot point to opaque types
-// pub const spi0 = @import("std").zig.c_translation.cast([*c]spi_inst_t, spi0_hw);
-//
-//
-// That's why I have to add the following `handmake-translated` code:
-//
-// pub const spi_hw_t = extern struct {
-//     cr0: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     cr1: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     dr: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     sr: io_ro_32 = @import("std").mem.zeroes(io_ro_32),
-//     cpsr: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     imsc: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     ris: io_ro_32 = @import("std").mem.zeroes(io_ro_32),
-//     mis: io_ro_32 = @import("std").mem.zeroes(io_ro_32),
-//     icr: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-//     dmacr: io_rw_32 = @import("std").mem.zeroes(io_rw_32),
-// };
-pub const spi0_hw: [*c]c.spi_hw_t = @ptrFromInt(c.SPI0_BASE);
-pub const spi1_hw: [*c]c.spi_hw_t = @ptrFromInt(c.SPI1_BASE);
-pub const spi0 = spi0_hw;
-pub const spi1 = spi1_hw;
-// -----------------------------------------------------------------------------------
-
-const SSD1351_DEFAULT_SPI_GROUP = spi0; // SPI Group, either SPI0 or SPI1
+const SSD1351_DEFAULT_SPI_GROUP = spi_bindings.spi0;
 
 // -----------------------------------------------------------------------------------
 //
@@ -214,7 +190,7 @@ pub const SSD1351 = struct {
     const Config = struct {
         show_fps: bool,
         fps_color: u16,
-        spi_group: [*c]c.spi_hw_t,
+        spi_group: ?spi_bindings.SPI_HARDWRE_STRUCT_PTR,
         spi_baudrate: u32,
         data_and_command_pin: u32,
         reset_pin: u32,
@@ -295,7 +271,7 @@ pub const SSD1351 = struct {
 
         if (build_options.enable_debug_log) {
             const show_fps_str = if (me.config.show_fps) "True" else "False";
-            const spi_group_str = if (me.config.spi_group == spi0) "SPI0" else "SPI1";
+            const spi_group_str = if (me.config.spi_group == spi_bindings.spi0) "SPI0" else "SPI1";
             _ = c.printf(
                 "\n>>> [ OLED-SSD1351 > init ] - {" ++
                     "\n\tfps_color: 0x%X" ++
@@ -330,7 +306,44 @@ pub const SSD1351 = struct {
                 _ = c.printf("0x%02X, ", me._scroll_buffer[index]);
             }
         }
+        // Number of bits per transfer, the polarity, phase and byte order.
+        _ = spi_bindings.spi_set_format(
+            me.config.spi_group,
+            8,
+            c.SPI_CPOL_1,
+            c.SPI_CPHA_1,
+            c.SPI_MSB_FIRST,
+        );
 
+        //
+        // Clock and Data pin alterative function
+        //
+        _ = c.gpio_set_function(me.config.spi_clock_pin, c.GPIO_FUNC_SPI);
+        _ = c.gpio_set_function(me.config.spi_tx_pin, c.GPIO_FUNC_SPI);
+
+        //
+        // Init `DC` (Data/Command) pin
+        //
+        _ = c.gpio_init(me.config.data_and_command_pin);
+        _ = c.gpio_set_dir(me.config.data_and_command_pin, true);
+        _ = c.gpio_put(me.config.data_and_command_pin, true);
+
+        //
+        // Init `RES` (REST) pin
+        // The `RES` pin resets the display’s controller when it is low
+        //
+        _ = c.gpio_init(me.config.reset_pin);
+        _ = c.gpio_set_dir(me.config.reset_pin, true);
+        _ = c.gpio_put(me.config.reset_pin, true);
+        c.sleep_ms(10);
+        _ = c.gpio_put(me.config.reset_pin, false);
+        c.sleep_ms(500);
+        _ = c.gpio_put(me.config.reset_pin, true);
+        _ = c.gpio_put(me.config.data_and_command_pin, false);
+
+        if (build_options.enable_debug_log) {
+            _ = c.printf("\n>>> [ OLED-SSD1351 > init ] - successfully.\n");
+        }
         return me;
     }
 
