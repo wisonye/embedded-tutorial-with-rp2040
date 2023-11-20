@@ -17,8 +17,11 @@
 |                     |                                                                              |
 | [ ARM Cortex-M ]    | [[https://en.wikipedia.org/wiki/ARM_Cortex-M][wiki-link]]                                                                    |
 | =AMBA=                | Arm Advanced Microcontroller Bus Architecture, [[https://en.wikipedia.org/wiki/Advanced_Microcontroller_Bus_Architecture][wiki-link]]                     |
-| =AHB=                 | Advanced High-performance Bus, wiki-link                                     |
-| =APB=                 | Advanced Peripheral Bus, wiki-link                                           |
+| =BUS=                 | A set of physical wires for transferring data or control signals between     |
+| =BUS Bridge=          | A bus bridge connects two different buses together.                          |
+|                     | two or more hardware components.                                             |
+| =AHB=                 | Advanced High-performance Bus for high-bandwidth communication, [[https://en.wikipedia.org/wiki/Advanced_Microcontroller_Bus_Architecture#Advanced_High-performance_Bus_(AHB)][wiki-link]]    |
+| =APB=                 | Advanced Peripheral Bus for low-bandwidth communication [[https://en.wikipedia.org/wiki/Advanced_Microcontroller_Bus_Architecture#Advanced_Peripheral_Bus_(APB)][wiki-link]]            |
 | =AHB-Lite=            | It's a subset of AHB formally defined in the AMBA 3 standard.                |
 |                     | This subset simplifies the design for a bus with a single master.            |
 | =BPU=                 | Breakpoint Unit                                                              |

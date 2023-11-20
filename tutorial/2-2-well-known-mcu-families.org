@@ -86,7 +86,7 @@ The =Cortex-M0+= also received =Cortex-M3= and =Cortex-M4= features, which can b
 
 Key features of the =Cortex-M0+= core are:
 
-- ARMv6-M architecture
+- ARMv6-M architecture (as a subset of the ARMv7-M profile with fewer instructions.)
 - 2-stage pipeline (one fewer than Cortex-M0)
 - Instruction sets: (same as Cortex-M0)
 - Thumb-1 (most), missing CBZ, CBNZ, IT
