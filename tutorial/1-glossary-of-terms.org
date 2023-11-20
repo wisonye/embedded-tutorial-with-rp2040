@@ -26,6 +26,7 @@
 |                     | This subset simplifies the design for a bus with a single master.            |
 | =BPU=                 | Breakpoint Unit                                                              |
 | =C-ABI=               | C Application Binary Interface                                               |
+| =EABI=                | Embedded Application Binary Interface                                        |
 | =CTI=                 | Cross Trigger Interface Unit                                                 |
 | =DAP=                 | Debugg access port                                                           |
 | =DWT=                 | Data Watchpoint and Trace                                                    |
