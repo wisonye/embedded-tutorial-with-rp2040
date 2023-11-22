@@ -1,0 +1,32 @@
+* How Interrupt works
+
+** Overview
+
+When a =software or hardware interrupt= happens, the processor is forced to stop its current activity and begin to execute a particular piece of code called an =interrupt service routine (ISR)=.
+
+When an =ISR= has been completed, the processor automatically resumes the activity that had been halted. The halted process continues as if nothing had happened.
+
+=Interrupts= also allow a processor to perform multiple tasks simultaneously in the following ways:
+
+- =Preemptive=
+
+    In the preemptive scenario, if a new task is more urgent than the current task, this new task can stop the current one without requiring any cooperation. The new task will take over control of the processor. The processor resumes the old task after the new task is completed.   
+
+
+- =Non-preemptive=
+
+    In the non-preemptive scenario, a new task cannot stop the current task until the current task voluntarily gives up control of the processor.
+
+
+** Why use interrupt over the =while loop (polling) checking=
+
+A simple metaphor between polling and interrupt sounds like this:
+
+Suppose you are expecting a call.
+
+- By the polling way, you pick up your telephone every 10 seconds to check whether there is anyone on the line calling you.
+
+- By the interrupt scheme, you continue to perform whatever tasks you are supposed to complete while waiting for the telephone to ring.
+
+
+** Interrupt numbers

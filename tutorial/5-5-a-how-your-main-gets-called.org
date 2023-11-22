@@ -1,0 +1,30 @@
+* About how your ~main~ function gets called
+
+Usually, Cortex-M stores the starting memory address of every =ISR= in a special array called the =interrupt vector table= which must contain the ~Rest_Handler()~ to run your ~main()~ function.
+
+=Interrupt Vector Table= at memory address =Ox00000004= (the memory address of ~Reset_Handler~ as well), and =Ox00000004= is the init value of =PC (Programm Counter)=, that's why ~Reset_Handler~ is the starting point to run the CPU instruction.
+
+You can confirm the =0x00000004= points to reset handler function by having a look at the RP2040 datasheet (Page 134 -> 2.8.3. Bootrom Contents)
+
+If you open the ~{PICO_SDK_PATH}/src/rp2_common/pico_standard_link/crt0.S~ (C Runtime assembley I guess?), you should see the following comment and assembley code:
+
+#+BEGIN_SRC text
+  // Reset handler:
+  // - initialises .data
+  // - clears .bss
+  // - calls runtime_init
+  // - calls main
+  // - calls exit (which should eventually hang the processor via _exit)
+
+  platform_entry: // symbol for stack traces
+      // Use 32-bit jumps, in case these symbols are moved out of branch range
+      // (e.g. if main is in SRAM and crt0 in flash)
+      ldr r1, =runtime_init
+      blx r1
+      ldr r1, =main
+      blx r1
+      ldr r1, =exit
+      blx r1
+#+END_SRC
+
+~ldr r1, =main~ loads the ~main~ function address into ~r1~ register and then ~blx r1~ jumps to execute your ~main~ function.

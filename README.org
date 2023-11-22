@@ -132,9 +132,14 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 
    5.4 [[file:c-demos/cmake-build-process.org][How =cmake= build your pico program]]
 
+   5.5 [[file:tutorial/5-5-a-how-your-main-gets-called.org][How you ~main~ function gets called]]
+
 6. SPI (Serial Peripheral Interface)
 
    6.1 [[file:tutorial/6-1-a-how-spi-works.org][How SPI works]]
 
    6.2 SPI demo
-   
+
+7. Interrupt
+
+   7.1 [[file:tutorial/7-1-a-how-interrupt-works.org][How Interrupt works]]
