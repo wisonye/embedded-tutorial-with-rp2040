@@ -30,3 +30,198 @@ Suppose you are expecting a call.
 
 
 ** Interrupt numbers
+
+The =RP2040= uses the standard ARM =Nested Vectored Interrupt Controller (NVIC)=, and =Cortex-M0+= only support ~32~ external interrupts, that's why =RP2040= also only support ~32~ external interrupts.
+
+Interrupts are identified by a number from ~0~ to ~31~.
+
+On the =RP2040=, only the lower 26 IRQ signals are connected on the NVIC; =IRQs 26 to 31 are tied to zero (never firing)!!!=
+
+There is one =NVIC= per core, and each core's =NVIC= has the same hardware interrupt lines routed to it, with the exception of the IO interrupts where there is one IO interrupt per bank, per core. These are completely independent, so, for example, processor 0 can be interrupted by GPIO 0 in bank 0, and processor 1 by GPIO 1 in the same bank.
+
+Here is the interrupt numbers (IRQs) defined in ~{PICO_SDK_PATH}/src/rp2040/hardware_regs/include/hardware/regs/intctrl.h~:
+
+#+BEGIN_SRC c
+  IRQ | Interrupt Source
+  ----|-----------------
+   0  | TIMER_IRQ_0
+   1  | TIMER_IRQ_1
+   2  | TIMER_IRQ_2
+   3  | TIMER_IRQ_3
+   4  | PWM_IRQ_WRAP
+   5  | USBCTRL_IRQ
+   6  | XIP_IRQ
+   7  | PIO0_IRQ_0
+   8  | PIO0_IRQ_1
+   9  | PIO1_IRQ_0
+  10  | PIO1_IRQ_1
+  11  | DMA_IRQ_0
+  12  | DMA_IRQ_1
+  13  | IO_IRQ_BANK0
+  14  | IO_IRQ_QSPI
+  15  | SIO_IRQ_PROC0
+  16  | SIO_IRQ_PROC1
+  17  | CLOCKS_IRQ
+  18  | SPI0_IRQ
+  19  | SPI1_IRQ
+  20  | UART0_IRQ
+  21  | UART1_IRQ
+  22  | ADC0_IRQ_FIFO
+  23  | I2C0_IRQ
+  24  | I2C1_IRQ
+  25  | RTC_IRQ
+#+END_SRC
+
+
+** System interrupt
+
+=Cortex-M= processors support up to ~256~ types of interrupts. Each interrupt type, excluding the =reset= interrupt, is identified by a unique number, ranging from ~-15~ to ~240~. Interrupt numbers are defined by ARM and chip manufacturers collectively. These numbers are fixed and software cannot re-define them.
+
+The first 16 interrupts are =system interrupts=, also called =system exceptions=. Exceptions are the interrupts that come from the processor core. These interrupt numbers are defined by ARM. Specifically, the ARM =CMSIS= library defines all system exceptions by using negative values. =CMSIS= stands for =Cortex Microcontroller Software Interface Standard=.
+
+Here are the default system interrupt numbers:
+
+| IRQ | Description                  | corresponding ISR |
+|-----+------------------------------+-------------------|
+| =-15= | Reset                        | _reset_handler    |
+| =-14= | Non-maskable interrupt (NMI) | isr_nmi           |
+| =-13= | Hard fault                   | isr_hardfault     |
+| =-12= | Memory management            |                   |
+| =-11= | Bus fault                    |                   |
+| =-10= | Usage fault                  |                   |
+| =-5=  | Supervisor call (SVCall)     | isr_svcall        |
+| =-4=  | Debug monitor                |                   |
+| =-2=  | PendSV                       | isr_pendsv        |
+| =-1=  | Sys Tick                     | isr_systick       |
+
+
+All interrupt numbers start from 0 call =external interrupts= or (peripheral interrupts).
+
+
+** Interrupt Vector Table
+
+=Cortex-M= stores the starting memory address of every =ISR= in a special array called the =Interrupt Vector Table=. For a given interrupt number ~i~ defined in =CMSIS=, the memory address of its corresponding =ISR= is located at the (i + 15) entry in the =Interrupt Vector Table=.
+
+The interrupt vector table is stored at the memory address =0x00000004=. Because each entry in the table represents a memory address, each entry takes four   bytes in memory: ~Address of ISR = InterruptVectorTable[i + 15]~
+
+For example:
+
+- The interrupt number of =SysTick= is ~-1~, the memory address of =SysTick_Handler= can be founding by reading the word stored at the following address:
+
+  #+BEGIN_SRC text
+    Address of SysTick_Handler = Ox00000004 + 4 x (-1+15) = Ox0000003C
+  #+END_SRC
+
+- The interrupt number of =reset= is ~-15~. Thus, the memory address of =_reset_handler= is:
+
+  #+BEGIN_SRC text
+    Address of Reset_Handler = Ox00000004 + 4 x ( -15 + 15) = Ox00000004
+  #+END_SRC
+
+  You can confirm the =0x00000004= points to reset handler function by having a look at the =RP2040= datasheet (Page 134 -> 2.8.3. Bootrom Contents)
+
+
+
+You can found the =Interrupt Vector Table= defines in ~{PICO_SDK_PATH}/src/rp2_common/pico_standard_link/crt0.S~:
+
+#+BEGIN_SRC assembly
+__VECTOR_TABLE:
+__vectors:
+.word __StackTop
+.word _reset_handler
+.word isr_nmi
+.word isr_hardfault
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_svcall
+.word isr_invalid // Reserved, should never fire
+.word isr_invalid // Reserved, should never fire
+.word isr_pendsv
+.word isr_systick
+.word isr_irq0
+.word isr_irq1
+.word isr_irq2
+.word isr_irq3
+.word isr_irq4
+.word isr_irq5
+.word isr_irq6
+.word isr_irq7
+.word isr_irq8
+.word isr_irq9
+.word isr_irq10
+.word isr_irq11
+.word isr_irq12
+.word isr_irq13
+.word isr_irq14
+.word isr_irq15
+.word isr_irq16
+.word isr_irq17
+.word isr_irq18
+.word isr_irq19
+.word isr_irq20
+.word isr_irq21
+.word isr_irq22
+.word isr_irq23
+.word isr_irq24
+.word isr_irq25
+.word isr_irq26
+.word isr_irq27
+.word isr_irq28
+.word isr_irq29
+.word isr_irq30
+.word isr_irq31
+#+END_SRC
+
+And you can found the =IRS= name mapping in ~{PICO_SDK_PATH}/src/rp2_common/cmsis/include/cmsis/rename_exceptions.h~
+
+
+
+** Interrupt priority
+
+=Cortex-M= processors use the =Nested Vectored Interrupt Controller (NVIC)= to manage interrupts. =NVIC= allows applications to enable specific interrupts and set their priority levels. The processor serves all interrupts based on their priority levels. The processor stops the currently running interrupt handler if a new interrupt with a higher priority occurs. The new interrupt task preempts the current lower-priority task, and the processor resumes the low-priority task when the handler of the new interrupt completes.
+
+A higher value of the interrupt priority number represents a lower priority (or urgency). The ~Reset_Handler()~ has top priority, and its priority number is ~-3~. You can found the interrupt priority defines in ~{PICO_SDK_PATH}/src/rp2_common/hardware_irq/include/hardware/irq.h~:
+
+#+BEGIN_SRC c
+  #ifndef PICO_DEFAULT_IRQ_PRIORITY
+  #define PICO_DEFAULT_IRQ_PRIORITY 0x80
+  #endif
+
+  #define PICO_LOWEST_IRQ_PRIORITY 0xff   // Lowest priority
+  #define PICO_HIGHEST_IRQ_PRIORITY 0x00  // Highest priority
+#+END_SRC
+
+
+** Nested Vectored Interrupt Controller (NVIC)
+
+The =Nested Vectored Interrupt Controller (NVIC)= is built into =Cortex-M= cores to manage all interrupts. It offers three key functions:
+
+1. Enable and disable interrupts
+
+2. Configure the preemption priority and sub-priority of a specific interrupt
+
+3. Set and clear the handing bit of a specific interrupt
+
+Here are the corresponding registers:
+
+- Interrupt set enable register (ISER)
+- Interrupt clear enable register (ICER)
+- Interrupt set pending register (ISPR)
+- Interrupt clear pending register (ICPR)
+- Interrupt active bit register (IABR)
+- Software trigger interrupt register (STIR)
+
+You can found the Cortex-M0+ regisetr defined in ~{PICO_SDK_PATH}/src/rp2_common/cmsis/stub/CMSIS/Core/Include/core_cm0plus.h~
+
+But keep that in mind, those registers are wrapped into different registers in =RP4040=, so you don't need to manipulate those ~ISER, ICER, ISPR, ICPR, IABR, STIR~ manually. Instead, you should use the registers list in the =RP2040= (page 243 -> GPIO -> List of registers).
+
+
+** Interrupt Stacking and Unstacking
+
+** C SDK guide
+
