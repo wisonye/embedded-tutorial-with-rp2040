@@ -1,5 +1,38 @@
 * Install =ARM GNU Toolchain=
 
+You need to download and install the cross-compilation toolchain: ~arm-none-eabi-gcc~
+
+| Binary Categories                 |
+|-----------------------------------|
+|                                   |
+| [ Compiler, Linker and Aseemble ] |
+| arm-none-eabi-gcc                 |
+|                                   |
+| [ Aseemble ]                      |
+| arm-none-eabi-ass                 |
+|                                   |
+| [ Link ]                          |
+| arm-none-eabi-ld                  |
+|                                   |
+| [ Elf file analyzer ]             |
+| arm-none-eabi-objdump             |
+| arm-none-eabi-readelf             |
+| arm-none-eabi-nm                  |
+|                                   |
+| [ Format converter ]              |
+| arm-none-eabi-copy                |
+|                                   |
+
+
+~arm-none-eabi-gcc~ file name part meanings:
+
+~arm~: ARM CPU architecture
+~none~: Has no vendor, does not target an operating system
+~eabi~: Embedded Application Binary Interface
+
+
+How to install?
+
 ** Install via package manager:
 
 #+BEGIN_SRC bash

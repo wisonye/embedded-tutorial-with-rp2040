@@ -1,6 +1,6 @@
 * About how your ~main~ function gets called
 
-Usually, Cortex-M stores the starting memory address of every =ISR= in a special array called the =interrupt vector table= which must contain the ~Rest_Handler()~ to run your ~main()~ function.
+Usually, Cortex-M stores the starting memory address of every =ISR= in a special array called the =interrupt vector table= which must contain the ~Reset_Handler()~ to run your ~main()~ function.
 
 =Interrupt Vector Table= at memory address =Ox00000004= (the memory address of ~Reset_Handler~ as well), and =Ox00000004= is the init value of =PC (Programm Counter)=, that's why ~Reset_Handler~ is the starting point to run the CPU instruction.
 
