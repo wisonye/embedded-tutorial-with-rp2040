@@ -116,12 +116,111 @@ The output ~.uf2~ binary located in the ~build~ folder:
 
 For some hardware driver implementations defined in =./src/utils/driver=, you need to provide the ~-Denable_debug_log=true~ custom build option to enable the debugging purpose ~c.printf~ to be compiled.
 
-For example:
+For example, replace the =touch-switch-button-demo= to the demo name you want to build:
 
 #+BEGIN_SRC bash
   PICO_SDK_PATH=~/pico/pico-sdk \
   ARM_STD_INCLUDE=~/Downloads/arm-gnu-toolchain/arm-none-eabi/include \
-  zig build -Denable_debug_log=true touch-switch-button-demo
+  zig build \
+  -Denable_debug_log=true \
+  touch-switch-button-demo
+#+END_SRC
+
+
+*** About the ~-Drelease=true~ build option
+
+The ~build.zig~ has the following code:
+
+#+BEGIN_SRC zig
+    const optimize = b.standardOptimizeOption(.{
+        // For best binary size
+        .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseSmall,
+    });
+#+END_SRC
+
+It configures the ~-Drelease=[bool]~ optimization build option, but it doesn't affect the ~zig build~ process.
+
+If you DO want a release build, then you have to pass ~-Drelease=true~ explicitly to ~zig build~ to create the release build like this:
+
+For example, replace the =touch-switch-button-demo= to the demo name you want to build:
+
+#+BEGIN_SRC bash
+  PICO_SDK_PATH=~/pico/pico-sdk \
+  ARM_STD_INCLUDE=~/Downloads/arm-gnu-toolchain/arm-none-eabi/include \
+  zig build \
+  -Denable_debug_log=true \
+  -Drelease=true \
+  touch-switch-button-demo
+#+END_SRC
+
+
+You can run the ~llvm-objdump -h zig-out/{DEMO_NAME_HERE}.o~ command to check whether the obj file is a release build or not, the output contains many ~.debug_xxx~ section if that's NOT the release build.
+
+For example:
+
+#+BEGIN_SRC bash
+    llvm-objdump -h zig-out/touch-switch-button-demo.o
+
+    #
+    # Debug build output
+    #
+    zig-out/touch-switch-button-demo.o:     file format elf32-littlearm
+
+    Sections:
+    Idx Name                Size     VMA      Type
+      0                     00000000 00000000
+      1 .text               000003e0 00000000 TEXT
+      2 .ARM.exidx          00000078 00000000
+      3 .rel.text           00000178 00000000
+      4 .rel.ARM.exidx      00000078 00000000
+      5 .rodata.cst8        00000010 00000000 DATA
+      6 .rodata             000000d8 00000000 DATA
+      7 .rel.rodata         00000060 00000000
+      8 .data               00000369 00000000 DATA
+      9 .rel.data           00000038 00000000
+     10 .rodata.cst4        00000004 00000000 DATA
+     11 .bss                0000005c 00000000 BSS
+     12 .debug_abbrev       00000162 00000000 DEBUG // Debug build only section
+     13 .debug_info         00000b82 00000000 DEBUG // Debug build only section
+     14 .rel.debug_info     00000ab8 00000000
+     15 .debug_str          00001089 00000000 DEBUG // Debug build only section
+     16 .debug_pubnames     000002ec 00000000 DEBUG // Debug build only section
+     17 .rel.debug_pubnames 00000008 00000000
+     18 .debug_pubtypes     00000448 00000000 DEBUG // Debug build only section
+     19 .rel.debug_pubtypes 00000008 00000000
+     20 .ARM.attributes     00000041 00000000
+     21 .debug_frame        000001a8 00000000 DEBUG // Debug build only section
+     22 .rel.debug_frame    000000f0 00000000
+     23 .debug_line         000004ed 00000000 DEBUG // Debug build only section
+     24 .rel.debug_line     00000008 00000000
+     25 .note.GNU-stack     00000000 00000000
+     26 .symtab             00000610 00000000
+     27 .shstrtab           0000015f 00000000
+     28 .strtab             000006bf 00000000
+
+
+    #
+    # Release build output without .debug_xxx sections and with
+    # smaller text section size!!!
+    #
+    zig-out/touch-switch-button-demo.o:     file format elf32-littlearm
+
+    Sections:
+    Idx Name            Size     VMA      Type
+      0                 00000000 00000000
+      1 .text           0000017c 00000000 TEXT
+      2 .ARM.exidx      00000030 00000000
+      3 .rel.text       000000c8 00000000
+      4 .rel.ARM.exidx  00000030 00000000
+      5 .data           000002da 00000000 DATA
+      6 .rel.data       00000008 00000000
+      7 .rodata         00000028 00000000 DATA
+      8 .rel.rodata     00000020 00000000
+      9 .ARM.attributes 00000041 00000000
+     10 .note.GNU-stack 00000000 00000000
+     11 .symtab         000002f0 00000000
+     12 .shstrtab       00000089 00000000
+     13 .strtab         000002bc 00000000
 #+END_SRC
 
 
