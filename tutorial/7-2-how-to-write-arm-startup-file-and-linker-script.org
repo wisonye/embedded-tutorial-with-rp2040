@@ -1,0 +1,7 @@
+* How to write ARM startup file and linker script from scratch
+
+Because this knowledge is very important for you to know how it works under the hood, I decided to put the following YouTube video links separated in this topic!!!
+
+[[https://www.youtube.com/watch?v=2Hm8eEHsgls&list=PLERTijJOmYrDiiWd10iRHY0VRHdJwUH4g][Bare metal embedded lecture-3: Writing MCU startup file from scratch]]
+
+[[https://www.youtube.com/watch?v=B7oKdUvRhQQ&list=PLERTijJOmYrDiiWd10iRHY0VRHdJwUH4g][Bare metal embedded lecture-4: Writing linker scripts and section placement]]

@@ -143,3 +143,5 @@ In the first demo, we will learn how to use MCU registers to control MCU, as tha
 7. Interrupt
 
    7.1 [[file:tutorial/7-1-a-how-interrupt-works.org][How Interrupt works]]
+
+   7.2 [[file:tutorial/7-2-how-to-write-arm-startup-file-and-linker-script.org][How to write ARM startup file and linker script from scratch]]

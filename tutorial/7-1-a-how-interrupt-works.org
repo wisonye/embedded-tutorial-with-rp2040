@@ -125,6 +125,10 @@ For example:
 You can found the =Interrupt Vector Table= defines in ~{PICO_SDK_PATH}/src/rp2_common/pico_standard_link/crt0.S~:
 
 #+BEGIN_SRC assembly
+.section .vectors, "ax"
+.align 2
+
+.global __vectors, __VECTOR_TABLE
 __VECTOR_TABLE:
 __vectors:
 .word __StackTop
@@ -180,6 +184,26 @@ __vectors:
 And you can found the =IRS= name mapping in ~{PICO_SDK_PATH}/src/rp2_common/cmsis/include/cmsis/rename_exceptions.h~
 
 
+And that ~.vectors~ section will replaced into the ~.text~ section in the flash memory in linking stage, you can found the following code in ~{PICO_SDK_PATH}/src/rp2_common/pico_standard_link/memmap_default.ld~ script:
+
+#+BEGIN_SRC c
+  .text : {
+      __logical_binary_start = .;
+      KEEP (*(.vectors))  /* HERE!!! *
+      KEEP (*(.binary_info_header))
+      __binary_info_header_end = .;
+      KEEP (*(.reset))
+      /* ignore the reset contents*/
+  }
+#+END_SRC
+
+
+For more details about how the ARM MCU startup file and linker script works, plz watch the following videos:
+
+[[https://www.youtube.com/watch?v=2Hm8eEHsgls&list=PLERTijJOmYrDiiWd10iRHY0VRHdJwUH4g][Bare metal embedded lecture-3: Writing MCU startup file from scratch]]
+
+[[https://www.youtube.com/watch?v=B7oKdUvRhQQ&list=PLERTijJOmYrDiiWd10iRHY0VRHdJwUH4g][Bare metal embedded lecture-4: Writing linker scripts and section placement]]
+
 
 ** Interrupt priority
 
@@ -222,6 +246,7 @@ But keep that in mind, those registers are wrapped into different registers in =
 
 
 ** Interrupt Stacking and Unstacking
+
 
 ** C SDK guide
 
