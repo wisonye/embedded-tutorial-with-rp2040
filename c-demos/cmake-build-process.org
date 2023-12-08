@@ -166,6 +166,14 @@ As you can see, that =arm-none-eabi-gcc= and =arm-none-eabi-g++= command are sup
   -O3                         # Optimization level 3
   -DNDEBUG                    # No Debug
 
+  # Place each function or data item into its own section in the output file if the target supports arbitrary sections. The name of the function or the name of the data item determines the section’s name in the output file. Use these options on systems where the linker can perform optimizations to improve locality of reference in the instruction space. Most systems using the ELF object format have linkers with such optimizations.
+  -ffunction-sections
+  -fdata-sections
+
+
+  -MD                        # Write a depfile containing user and system headers
+  -MT <file>                 # Specify name of main file output in depfile
+  -MF <file>                 # Write depfile output from -MMD, -MD, -MM, or -M to <file>
 
   # `-W` prefix means pass the following option to linker `arm-none-eabi-ld`
   -Wl,--build-id=none         # Request  the creation of a ".note.gnu.build-id" ELF note section or a ".buildid" COFF section.
