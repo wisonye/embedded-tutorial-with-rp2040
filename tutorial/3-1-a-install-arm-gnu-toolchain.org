@@ -41,6 +41,9 @@ How to install?
 
   # Arch Linux
   doas pacman --sync --refresh arm-none-eabi-gcc arm-none-eabi-newlib
+
+  # Fedora
+  sudo dnf install arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ arm-none-eabi-newlib arm-none-eabi-binutils-cs
 #+END_SRC
 
 
