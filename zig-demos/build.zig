@@ -36,6 +36,17 @@ const BuildError = error{
     InvalidUtf8,
     BadPathName,
     NetworkNotFound,
+    InvalidWtf8,
+    PathAlreadyExists,
+    NoSpaceLeft,
+    SharingViolation,
+    PipeBusy,
+    AntivirusInterference,
+    FileTooBig,
+    IsDir,
+    FileLocksNotSupported,
+    FileBusy,
+    WouldBlock,
 };
 
 ///
@@ -46,7 +57,7 @@ fn createZigObjCompilation(
     sdk_path: []const u8,
     zig_src: []const u8,
     cmake_project_name: []const u8,
-    target: std.zig.CrossTarget,
+    target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     custom_build_options: *std.Build.Step.Options,
 ) BuildError!*std.Build.Step.Compile {
@@ -61,14 +72,14 @@ fn createZigObjCompilation(
         .optimize = optimize,
     });
 
-    lib.addOptions("build_options", custom_build_options);
+    lib.root_module.addOptions("build_options", custom_build_options);
 
     //
     // Default arm-none-eabi includes or from env var `ARM_STD_INCLUDE`
     //
     lib.linkLibC();
     lib.addSystemIncludePath(.{ .path = "/usr/arm-none-eabi/include" });
-    if (std.os.getenv("ARM_STD_INCLUDE")) |arm_std_include_path| {
+    if (std.posix.getenv("ARM_STD_INCLUDE")) |arm_std_include_path| {
         lib.addSystemIncludePath(.{ .path = arm_std_include_path });
     }
 
@@ -78,7 +89,7 @@ fn createZigObjCompilation(
     var board_header_file: ?[]const u8 = null;
 
     const boards_directory_path = b.pathJoin(&.{ sdk_path, "src/boards/include/boards/" });
-    var boards_dir = try std.fs.cwd().openIterableDir(boards_directory_path, .{});
+    var boards_dir = try std.fs.openDirAbsolute(boards_directory_path, .{ .iterate = true });
     defer boards_dir.close();
 
     var dir_iter = boards_dir.iterate();
@@ -138,13 +149,13 @@ fn createZigObjCompilation(
             continue;
         }
 
-        lib.addIncludePath(std.build.LazyPath{ .path = include_dir });
+        lib.addIncludePath(std.Build.LazyPath{ .path = include_dir });
     }
 
     //
     // Extra include folder for WIFI support
     //
-    lib.defineCMacroRaw("PICO_CYW43_ARCH_THREADSAFE_BACKGROUND");
+    lib.defineCMacro("PICO_CYW43_ARCH_THREADSAFE_BACKGROUND", null);
     const cyw43_include = try std.fmt.allocPrint(
         b.allocator,
         "{s}/lib/cyw43-driver/src",
@@ -230,7 +241,7 @@ pub fn create_build_step(
     step_desc: []const u8,
     zig_src: []const u8,
     cmake_project_name: []const u8,
-    target: std.zig.CrossTarget,
+    target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     custom_build_options: *std.Build.Step.Options,
 ) anyerror!void {
@@ -284,8 +295,8 @@ pub fn build(b: *std.Build) anyerror!void {
     //
     // - `PICO_TOOLCHAIN_PATH` needed if `arm-none-eabi-gcc` doesn't in ypur `$PATH`
     //
-    const pico_sdk_path = std.os.getenv("PICO_SDK_PATH") orelse "";
-    const pico_toolchain_path = std.os.getenv("PICO_TOOLCHAIN_PATH") orelse "";
+    const pico_sdk_path = std.posix.getenv("PICO_SDK_PATH") orelse "";
+    const pico_toolchain_path = std.posix.getenv("PICO_TOOLCHAIN_PATH") orelse "";
     _ = pico_toolchain_path;
 
     if (pico_sdk_path.len <= 0) {
@@ -296,12 +307,12 @@ pub fn build(b: *std.Build) anyerror!void {
     //
     // RP2040 target, optimize and custom build options
     //
-    const rp2040_target = std.zig.CrossTarget{
+    const rp2040_target = b.resolveTargetQuery(.{
         .abi = .eabi,
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
         .os_tag = .freestanding,
-    };
+    });
 
     const optimize = b.standardOptimizeOption(.{
         // For best binary size
